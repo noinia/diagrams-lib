@@ -35,6 +35,8 @@ module Diagrams.TwoD.Types
        , Angle(..)
        , Turn(..), CircleFrac, Rad(..), Deg(..)
        , fullCircle, convertAngle
+
+       , HasBasicNumType(..), IsBasicNumType
        ) where
 
 import           Diagrams.Coordinates
@@ -227,39 +229,63 @@ type T2D = T2 Double
 
 -- | Newtype wrapper used to represent angles as fractions of a
 --   circle.  For example, 1\/3 turn = tau\/3 radians = 120 degrees.
-newtype Turn = Turn { getTurn :: Double }
+newtype Turn a = Turn { getTurn :: a }
   deriving (Read, Show, Eq, Ord, Enum, Fractional, Num, Real, RealFrac)
 
--- | Deprecated synonym for 'Turn', retained for backwards compatibility.
-type CircleFrac = Turn
+
+instance IsBasicNumType a => HasBasicNumType (Turn a) where
+    type BasicNumType (Turn a) = a
+
+-- | Type Synonym for Turn
+type TurnD = Turn Double
+
+-- | Deprecated synonym for 'TurnD', retained for backwards compatibility.
+type CircleFrac = Turn Double
+
+
+
+
+
 
 -- | Newtype wrapper for representing angles in radians.
-newtype Rad = Rad { getRad :: Double }
+newtype Rad a = Rad { getRad :: a}
   deriving (Read, Show, Eq, Ord, Enum, Floating, Fractional, Num, Real, RealFloat, RealFrac)
 
+instance IsBasicNumType a => HasBasicNumType (Rad a) where
+    type BasicNumType (Rad a) = a
+
+
 -- | Newtype wrapper for representing angles in degrees.
-newtype Deg = Deg { getDeg :: Double }
+newtype Deg a = Deg { getDeg :: a }
   deriving (Read, Show, Eq, Ord, Enum, Fractional, Num, Real, RealFrac)
 
+instance IsBasicNumType a => HasBasicNumType (Deg a) where
+    type BasicNumType (Deg a) = a
+
+
+
+
 -- | Type class for types that measure angles.
-class Num a => Angle a where
+class HasBasicNumType a => Angle a where
+
   -- | Convert to a turn, /i.e./ a fraction of a circle.
-  toTurn   :: a -> Turn
+  toTurn   :: a -> Turn (BasicNumType a)
 
   -- | Convert from a turn, /i.e./ a fraction of a circle.
-  fromTurn :: Turn -> a
+  fromTurn :: Turn (BasicNumType a) -> a
 
-instance Angle Turn where
+
+instance IsBasicNumType a => Angle (Turn a) where
   toTurn   = id
   fromTurn = id
 
 -- | tau radians = 1 full turn.
-instance Angle Rad where
+instance (IsBasicNumType a, Floating a) => Angle (Rad a) where
   toTurn   = Turn . (/tau) . getRad
   fromTurn = Rad . (*tau) . getTurn
 
 -- | 360 degrees = 1 full turn.
-instance Angle Deg where
+instance (IsBasicNumType a, Fractional a) => Angle (Deg a) where
   toTurn   = Turn . (/360) . getDeg
   fromTurn = Deg . (*360) . getTurn
 
@@ -272,5 +298,22 @@ fullCircle :: Angle a => a
 fullCircle = fullTurn
 
 -- | Convert between two angle representations.
-convertAngle :: (Angle a, Angle b) => a -> b
+convertAngle :: (Angle a, Angle b, BasicNumType b ~ BasicNumType a) => a -> b
 convertAngle = fromTurn . toTurn
+
+
+-----------------------------------------------------------------------------
+
+-- | A class expressing that a type is usable as a basic num type
+class Num c => IsBasicNumType c
+
+
+-- The `standard` numeric types are basicNum types
+instance IsBasicNumType Double
+instance IsBasicNumType Integer
+instance IsBasicNumType Int
+
+-- | A class expressing that this type is somehow parameterized over
+-- an underlying numeric type
+class IsBasicNumType (BasicNumType t) => HasBasicNumType t where
+    type BasicNumType t
