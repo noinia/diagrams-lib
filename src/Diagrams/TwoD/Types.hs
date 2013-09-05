@@ -25,7 +25,10 @@ module Diagrams.TwoD.Types
        ( -- * 2D Euclidean space
          V2(..), v2, unv2
        , R2, r2, unr2
+
        , P2, p2, unp2
+       , P2D, p2d, unp2d
+
        , T2
 
          -- * Angles
@@ -189,27 +192,27 @@ instance Coordinates (V2 a) where
 -- foo (coords -> x :& y) = ...
 -- @
 
-type Pt2 a = Point (V2 a)
+type P2 a = Point (V2 a)
 
-type P2 = Point R2
-
-
--- | Construct a 2D point from a pair of coordinates.  See also '&'.
-pt2 :: (a,a) -> Pt2 a
-pt2 = P . v2
-
--- | Convert a 2D point back into a pair of coordinates.  See also 'coords'.
-unpt2      :: Pt2 a -> (a,a)
-unpt2 (P v) = unv2 v
+type P2D = Point R2
 
 
 -- | Construct a 2D point from a pair of coordinates.  See also '&'.
-p2 :: (Double, Double) -> P2
-p2 = pt2
+p2 :: (a,a) -> P2 a
+p2 = P . v2
 
 -- | Convert a 2D point back into a pair of coordinates.  See also 'coords'.
-unp2 :: P2 -> (Double, Double)
-unp2 = unpt2
+unp2      :: P2 a -> (a,a)
+unp2 (P v) = unv2 v
+
+
+-- | Construct a 2D point from a pair of coordinates.  See also '&'.
+p2d :: (Double, Double) -> P2D
+p2d = p2
+
+-- | Convert a 2D point back into a pair of coordinates.  See also 'coords'.
+unp2d :: P2D -> (Double, Double)
+unp2d = unp2
 
 -- | Transformations in R^2.
 type T2 = Transformation R2
