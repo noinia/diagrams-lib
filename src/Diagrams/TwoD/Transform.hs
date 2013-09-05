@@ -210,10 +210,12 @@ reflectY = transform reflectionY
 
 -- | @reflectionAbout p v@ is a reflection in the line determined by
 --   the point @p@ and vector @v@.
-reflectionAbout :: P2D -> R2 -> T2D
-reflectionAbout p v =
-  conjugate (rotation (-direction v :: Rad Double) <> translation (origin .-. p))
-            reflectionY
+reflectionAbout :: (RealFloat b, IsBasicNumType b) => P2 b -> V2 b -> T2 b
+reflectionAbout p v = reflectionAbout' p (-direction v)
+    where
+      reflectionAbout' :: (Floating b, IsBasicNumType b) => P2 b -> Rad b -> T2 b
+      reflectionAbout' p dir = conjugate (rotation dir <> translation (origin .-. p))
+                               reflectionY
 
 -- | @reflectAbout p v@ reflects a diagram in the line determined by
 --   the point @p@ and the vector @v@.
