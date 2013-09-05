@@ -114,7 +114,7 @@ rotateAbout p angle = rotate angle `under` translation (origin .-. p)
 
 -- | Construct a transformation which scales by the given factor in
 --   the x (horizontal) direction.
-scalingX :: Double -> T2D
+scalingX :: Fractional b => b -> T2 b
 scalingX c = fromLinear s s
   where s = (\v -> let (x,y) = unv2 v in V2 (x*c) y)
             <->
@@ -122,12 +122,12 @@ scalingX c = fromLinear s s
 
 -- | Scale a diagram by the given factor in the x (horizontal)
 --   direction.  To scale uniformly, use 'scale'.
-scaleX :: (Transformable t, V t ~ R2) => Double -> t -> t
+scaleX :: (Transformable t, V t ~ V2 b, Fractional b) => b -> t -> t
 scaleX = transform . scalingX
 
 -- | Construct a transformation which scales by the given factor in
 --   the y (vertical) direction.
-scalingY :: Double -> T2D
+scalingY :: Fractional b => b -> T2 b
 scalingY c = fromLinear s s
   where s = (\v -> let (x,y) = unv2 v in V2 x (y*c))
             <->
@@ -135,14 +135,14 @@ scalingY c = fromLinear s s
 
 -- | Scale a diagram by the given factor in the y (vertical)
 --   direction.  To scale uniformly, use 'scale'.
-scaleY :: (Transformable t, V t ~ R2) => Double -> t -> t
+scaleY :: (Transformable t, V t ~ V2 b, Fractional b) => b -> t -> t
 scaleY = transform . scalingY
 
 -- | @scaleToX w@ scales a diagram in the x (horizontal) direction by
 --   whatever factor required to make its width @w@.  @scaleToX@
 --   should not be applied to diagrams with a width of 0, such as
 --   'vrule'.
-scaleToX :: (Enveloped t, Transformable t, V t ~ R2) => Double -> t -> t
+scaleToX :: (Enveloped t, Transformable t, V t ~ V2 b, Fractional b) => b -> t -> t
 scaleToX w d = scaleX (w / width d) d
 
 -- | @scaleToY h@ scales a diagram in the y (vertical) direction by
