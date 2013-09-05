@@ -34,7 +34,7 @@ import Data.Semigroup
 -- | An external image primitive, representing an image the backend
 --   should import from another file when rendering.
 data Image = Image { imgFile   :: FilePath
-                   , imgSize   :: SizeSpec2D
+                   , imgSize   :: SizeSpec2D Double
                    , imgTransf :: T2D
                    }
 

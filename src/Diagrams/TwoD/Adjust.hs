@@ -30,7 +30,7 @@ import Diagrams.Attributes  (lineWidthA, lineColorA, lineCap
 import Diagrams.Util        ((#))
 
 import Diagrams.TwoD.Types  (R2, p2)
-import Diagrams.TwoD.Size   ( size2D, center2D, SizeSpec2D(..)
+import Diagrams.TwoD.Size   ( size2D, center2D, SizeSpec2D(..), SizeSpec2DD
                             , requiredScaleT, requiredScale
                             )
 import Diagrams.TwoD.Text   (fontSizeA)
@@ -66,8 +66,8 @@ setDefault2DAttributes d = d # lineWidthA def # lineColorA def # fontSizeA def
 --   and a way of updating the rendering options with a new (more
 --   specific) size.
 adjustDiaSize2D :: Monoid' m
-                => (Options b R2 -> SizeSpec2D)
-                -> (SizeSpec2D -> Options b R2 -> Options b R2)
+                => (Options b R2 -> SizeSpec2DD)
+                -> (SizeSpec2DD -> Options b R2 -> Options b R2)
                 -> b -> Options b R2 -> QDiagram b R2 m
                 -> (Options b R2, QDiagram b R2 m)
 adjustDiaSize2D getSize setSize _ opts d =
@@ -104,8 +104,8 @@ adjustDiaSize2D getSize setSize _ opts d =
 --
 --   * Also return the actual adjusted size of the diagram.
 adjustDia2D :: Monoid' m
-            => (Options b R2 -> SizeSpec2D)
-            -> (SizeSpec2D -> Options b R2 -> Options b R2)
+            => (Options b R2 -> SizeSpec2DD)
+            -> (SizeSpec2DD -> Options b R2 -> Options b R2)
             -> b -> Options b R2 -> QDiagram b R2 m
             -> (Options b R2, QDiagram b R2 m)
 adjustDia2D getSize setSize b opts d
@@ -114,5 +114,5 @@ adjustDia2D getSize setSize b opts d
 {-# DEPRECATED adjustSize "Use Diagrams.TwoD.Size.requiredScaleT instead." #-}
 -- | Re-export 'requiredScaleT' with the name 'adjustSize' for
 --   backwards compatibility.
-adjustSize :: SizeSpec2D -> (Double, Double) -> Transformation R2
+adjustSize :: SizeSpec2DD -> (Double, Double) -> Transformation R2
 adjustSize = requiredScaleT
