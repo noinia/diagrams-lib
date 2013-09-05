@@ -224,7 +224,7 @@ reflectAbout p v = transform (reflectionAbout p v)
 
 -- | @shearingX d@ is the linear transformation which is the identity on
 --   y coordinates and sends @(0,1)@ to @(d,1)@.
-shearingX :: Double -> T2D
+shearingX :: Num b => b -> T2 b
 shearingX d = fromLinear (sh d  <-> sh (-d))
                          (sh' d <-> sh' (-d))
   where sh  k (unv2 -> (x,y)) = V2 (x+k*y) y
@@ -233,12 +233,12 @@ shearingX d = fromLinear (sh d  <-> sh (-d))
 
 -- | @shearX d@ performs a shear in the x-direction which sends
 --   @(0,1)@ to @(d,1)@.
-shearX :: (Transformable t, V t ~ R2) => Double -> t -> t
+shearX :: (Transformable t, V t ~ V2 b, Num b) => b -> t -> t
 shearX = transform . shearingX
 
 -- | @shearingY d@ is the linear transformation which is the identity on
 --   x coordinates and sends @(1,0)@ to @(1,d)@.
-shearingY :: Double -> T2D
+shearingY :: Num b => b -> T2 b
 shearingY d = fromLinear (sh d  <-> sh (-d))
                          (sh' d <-> sh' (-d))
   where sh  k (unv2 -> (x,y)) = V2 x (y+k*x)
@@ -247,12 +247,12 @@ shearingY d = fromLinear (sh d  <-> sh (-d))
 
 -- | @shearY d@ performs a shear in the y-direction which sends
 --   @(1,0)@ to @(1,d)@.
-shearY :: (Transformable t, V t ~ R2) => Double -> t -> t
+shearY :: (Transformable t, V t ~ V2 b, Num b) => b -> t -> t
 shearY = transform . shearingY
 
 -- | Get the matrix equivalent of the linear transform,
 --   (as a pair of columns) and the translation vector.  This
 --   is mostly useful for implementing backends.
-onBasis :: Transformation R2 -> ((R2, R2), R2)
+onBasis :: Num b => T2 b -> ((V2 b, V2 b), V2 b)
 onBasis t = ((x, y), v)
   where ((x:y:[]), v) = T.onBasis t
