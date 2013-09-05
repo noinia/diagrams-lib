@@ -235,7 +235,7 @@ data FillRule = Winding  -- ^ Interior points are those with a nonzero
 instance Default FillRule where
   def = Winding
 
-runFillRule :: FillRule -> P2 -> Path R2 -> Bool
+runFillRule :: FillRule -> P2D -> Path R2 -> Bool
 runFillRule Winding = isInsideWinding
 runFillRule EvenOdd = isInsideEvenOdd
 
@@ -264,7 +264,7 @@ cross (coords -> x :& y) (coords -> x' :& y') = x * y' - y * x'
 --   by testing whether the point's /winding number/ is nonzero. Note
 --   that @False@ is /always/ returned for /open/ paths, regardless of
 --   the winding number.
-isInsideWinding :: P2 -> Path R2 -> Bool
+isInsideWinding :: P2D -> Path R2 -> Bool
 isInsideWinding p = (/= 0) . crossings p
 
 -- | Test whether the given point is inside the given (closed) path,
@@ -272,17 +272,17 @@ isInsideWinding p = (/= 0) . crossings p
 --   x direction crosses the path an even (outside) or odd (inside)
 --   number of times.  Note that @False@ is /always/ returned for
 --   /open/ paths, regardless of the number of crossings.
-isInsideEvenOdd :: P2 -> Path R2 -> Bool
+isInsideEvenOdd :: P2D -> Path R2 -> Bool
 isInsideEvenOdd p = odd . crossings p
 
 -- | Compute the sum of /signed/ crossings of a path as we travel in the
 --   positive x direction from a given point.
-crossings :: P2 -> Path R2 -> Int
+crossings :: P2D -> Path R2 -> Int
 crossings p = F.sum . map (trailCrossings p) . pathTrails
 
 -- | Compute the sum of signed crossings of a trail starting from the
 --   given point in the positive x direction.
-trailCrossings :: P2 -> Located (Trail R2) -> Int
+trailCrossings :: P2D -> Located (Trail R2) -> Int
 
   -- non-loop trails have no inside or outside, so don't contribute crossings
 trailCrossings _ t | not (isLoop (unLoc t)) = 0

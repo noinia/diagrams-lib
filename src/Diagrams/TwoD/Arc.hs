@@ -164,7 +164,7 @@ wedge r a1 a2 = trailLike . (`at` origin) . glueTrail . wrapLine
 --   > arcBetweenEx = mconcat
 --   >   [ arcBetween origin (p2 (2,1)) ht | ht <- [-0.2, -0.1 .. 0.2] ]
 --   >   # centerXY # pad 1.1
-arcBetween :: (TrailLike t, V t ~ R2) => P2 -> P2 -> Double -> t
+arcBetween :: (TrailLike t, V t ~ R2) => P2D -> P2D -> Double -> t
 arcBetween p q ht = trailLike (a # rotateBy (direction v) # moveTo p)
   where
     h = abs ht

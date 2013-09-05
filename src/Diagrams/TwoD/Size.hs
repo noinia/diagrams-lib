@@ -68,7 +68,7 @@ extentY d = (\f -> (-f unit_Y, f unitY)) <$> (appEnvelope . getEnvelope $ d)
 -- | Compute the point at the center (in the x- and y-directions) of a
 --   enveloped object.  Return the origin for objects with an empty
 --   envelope.
-center2D :: (Enveloped a, V a ~ R2) => a -> P2
+center2D :: (Enveloped a, V a ~ R2) => a -> P2D
 center2D = maybe origin (p2 . (mid *** mid)) . mm . (extentX &&& extentY)
   where mm = uncurry (liftA2 (,))
         mid = (/2) . uncurry (+)

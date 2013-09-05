@@ -59,7 +59,7 @@ data ScaleInv t =
   ScaleInv
   { unScaleInv  :: t
   , scaleInvDir :: R2
-  , scaleInvLoc :: P2
+  , scaleInvLoc :: P2D
   }
   deriving (Show)
 

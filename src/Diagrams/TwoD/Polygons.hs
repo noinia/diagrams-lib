@@ -143,7 +143,7 @@ data PolygonOpts = PolygonOpts
                      --   polygon in order to orient it in a
                      --   particular way?
 
-                   , polyCenter :: P2
+                   , polyCenter :: P2D
                      -- ^ Should a translation be applied to the
                      --   polygon in order to place the center at a
                      --   particular location?
@@ -210,7 +210,7 @@ polyRegularTrail n r = polyPolarTrail
 orient :: R2 -> Located (Trail R2) -> T2
 orient v = orientPoints v . trailVertices
 
-orientPoints :: R2 -> [P2] -> T2
+orientPoints :: R2 -> [P2D] -> T2
 orientPoints v xs = rotation a
   where
     (n1,x,n2) = maximumBy (comparing (distAlong v . sndOf3))
@@ -312,7 +312,7 @@ data StarOpts = StarFun (Int -> Int)
 --   returned (instead of any 'TrailLike') because the resulting path
 --   may have more than one component, for example if the vertices are
 --   to be connected in several disjoint cycles.
-star :: StarOpts -> [P2] -> Path R2
+star :: StarOpts -> [P2D] -> Path R2
 star sOpts vs = graphToPath $ mkGraph f vs
   where f = case sOpts of
               StarFun g  -> g

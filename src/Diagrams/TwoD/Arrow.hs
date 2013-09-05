@@ -221,12 +221,12 @@ stdScale = 100
 --   and rotating the arrow. The size of trail tr is arbitrary since it will be
 --   scaled so that the arrow offset is e .-. s, however is should be not be
 --   off by more than a factor of 100!
-arrow :: Renderable (Path R2) b => P2 -> P2 -> Diagram b R2
+arrow :: Renderable (Path R2) b => P2D -> P2D -> Diagram b R2
 arrow s e = arrow' def s e
 
 arrow'
   :: Renderable (Path R2) b =>
-     ArrowOpts -> P2 -> P2 -> Diagram b R2
+     ArrowOpts -> P2D -> P2D -> Diagram b R2
 arrow' opts s e = a # rotateBy (a0 - a1) # moveTo s
   where
     (h, hw') = mkHead opts

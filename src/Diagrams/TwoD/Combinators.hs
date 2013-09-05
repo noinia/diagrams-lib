@@ -233,7 +233,7 @@ extrudeTop s
 --   diagram which should actually be \"viewed\" in the final render,
 --   if you don't want to see the entire diagram.
 view :: ( Backend b R2, Monoid' m )
-     => P2 -> R2 -> QDiagram b R2 m -> QDiagram b R2 m
+     => P2D -> R2 -> QDiagram b R2 m -> QDiagram b R2 m
 view p (coords -> w :& h) = withEnvelope (rect w h # alignBL # moveTo p :: D R2)
 
 -- | Construct a bounding rectangle for an enveloped object, that is,
