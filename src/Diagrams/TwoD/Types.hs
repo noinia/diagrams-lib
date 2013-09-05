@@ -188,15 +188,28 @@ instance Coordinates (V2 a) where
 -- foo (unp2 -> (x,y)) = ...
 -- foo (coords -> x :& y) = ...
 -- @
+
+type Pt2 a = Point (V2 a)
+
 type P2 = Point R2
+
+
+-- | Construct a 2D point from a pair of coordinates.  See also '&'.
+pt2 :: (a,a) -> Pt2 a
+pt2 = P . v2
+
+-- | Convert a 2D point back into a pair of coordinates.  See also 'coords'.
+unpt2      :: Pt2 a -> (a,a)
+unpt2 (P v) = unv2 v
+
 
 -- | Construct a 2D point from a pair of coordinates.  See also '&'.
 p2 :: (Double, Double) -> P2
-p2 = P . r2
+p2 = pt2
 
 -- | Convert a 2D point back into a pair of coordinates.  See also 'coords'.
 unp2 :: P2 -> (Double, Double)
-unp2 (P v) = unr2 v
+unp2 = unpt2
 
 -- | Transformations in R^2.
 type T2 = Transformation R2
