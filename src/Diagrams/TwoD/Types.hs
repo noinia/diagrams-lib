@@ -29,7 +29,7 @@ module Diagrams.TwoD.Types
        , P2, p2, unp2
        , P2D, p2d, unp2d
 
-       , T2
+       , T2 , T2D
 
          -- * Angles
        , Angle(..)
@@ -215,10 +215,12 @@ unp2d :: P2D -> (Double, Double)
 unp2d = unp2
 
 -- | Transformations in R^2.
-type T2 = Transformation R2
+type T2 a = Transformation (V2 a)
 
-instance Transformable R2 where
+instance Num a => Transformable (V2 a) where
   transform = apply
+
+type T2D = T2 Double
 
 ------------------------------------------------------------
 -- Angles

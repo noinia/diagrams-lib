@@ -207,10 +207,10 @@ polyRegularTrail n r = polyPolarTrail
 --   generates the smallest rotation such that one of the segments
 --   adjacent to the vertex furthest in the direction of @v@ is
 --   perpendicular to @v@.
-orient :: R2 -> Located (Trail R2) -> T2
+orient :: R2 -> Located (Trail R2) -> T2D
 orient v = orientPoints v . trailVertices
 
-orientPoints :: R2 -> [P2D] -> T2
+orientPoints :: R2 -> [P2D] -> T2D
 orientPoints v xs = rotation a
   where
     (n1,x,n2) = maximumBy (comparing (distAlong v . sndOf3))

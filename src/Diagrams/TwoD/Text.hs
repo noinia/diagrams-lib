@@ -52,7 +52,7 @@ import           Data.Typeable
 --   specification, along with a transformation mapping from the local
 --   vector space of the text to the vector space in which it is
 --   embedded.
-data Text = Text T2 TextAlignment String
+data Text = Text T2D TextAlignment String
 
 type instance V Text = R2
 

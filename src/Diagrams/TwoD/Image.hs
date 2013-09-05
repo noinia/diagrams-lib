@@ -35,7 +35,7 @@ import Data.Semigroup
 --   should import from another file when rendering.
 data Image = Image { imgFile   :: FilePath
                    , imgSize   :: SizeSpec2D
-                   , imgTransf :: T2
+                   , imgTransf :: T2D
                    }
 
 type instance V Image = R2
