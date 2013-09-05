@@ -190,22 +190,22 @@ translateY = transform . translationY
 
 -- | Construct a transformation which flips a diagram from left to
 --   right, i.e. sends the point (x,y) to (-x,y).
-reflectionX :: T2D
+reflectionX :: Fractional b => T2 b
 reflectionX = scalingX (-1)
 
 -- | Flip a diagram from left to right, i.e. send the point (x,y) to
 --   (-x,y).
-reflectX :: (Transformable t, V t ~ R2) => t -> t
+reflectX :: (Transformable t, V t ~ V2 b, Fractional b) => t -> t
 reflectX = transform reflectionX
 
 -- | Construct a transformation which flips a diagram from top to
 --   bottom, i.e. sends the point (x,y) to (x,-y).
-reflectionY :: T2D
+reflectionY :: Fractional b => T2 b
 reflectionY = scalingY (-1)
 
 -- | Flip a diagram from top to bottom, i.e. send the point (x,y) to
 --   (x,-y).
-reflectY :: (Transformable t, V t ~ R2) => t -> t
+reflectY :: (Transformable t, V t ~ V2 b, Fractional b) => t -> t
 reflectY = transform reflectionY
 
 -- | @reflectionAbout p v@ is a reflection in the line determined by
