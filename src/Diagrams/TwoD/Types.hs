@@ -23,7 +23,7 @@
 
 module Diagrams.TwoD.Types
        ( -- * 2D Euclidean space
-         V2, v2, unv2
+         V2(..), v2, unv2
        , R2, r2, unr2
        , P2, p2, unp2
        , T2
