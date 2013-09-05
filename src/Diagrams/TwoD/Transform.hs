@@ -149,41 +149,41 @@ scaleToX w d = scaleX (w / width d) d
 --   whatever factor required to make its height @h@.  @scaleToY@
 --   should not be applied to diagrams with a height of 0, such as
 --   'hrule'.
-scaleToY :: (Enveloped t, Transformable t, V t ~ R2) => Double -> t -> t
+scaleToY :: (Enveloped t, Transformable t, V t ~ V2 b, Fractional b) => b -> t -> t
 scaleToY h d = scaleY (h / height d) d
 
 -- | @scaleUToX w@ scales a diagram /uniformly/ by whatever factor
 --   required to make its width @w@.  @scaleUToX@ should not be
 --   applied to diagrams with a width of 0, such as 'vrule'.
-scaleUToX :: (Enveloped t, Transformable t, V t ~ R2) => Double -> t -> t
+scaleUToX :: (Enveloped t, Transformable t, V t ~ V2 b, Fractional b) => b -> t -> t
 scaleUToX w d = scale (w / width d) d
 
 -- | @scaleUToY h@ scales a diagram /uniformly/ by whatever factor
 --   required to make its height @h@.  @scaleUToY@ should not be applied
 --   to diagrams with a height of 0, such as 'hrule'.
-scaleUToY :: (Enveloped t, Transformable t, V t ~ R2) => Double -> t -> t
+scaleUToY :: (Enveloped t, Transformable t, V t ~ V2 b, Fractional b) => b -> t -> t
 scaleUToY h d = scale (h / height d) d
 
 -- Translation ---------------------------------------------
 
 -- | Construct a transformation which translates by the given distance
 --   in the x (horizontal) direction.
-translationX :: Double -> T2D
+translationX :: Num b => b -> T2 b
 translationX x = translation (x & 0)
 
 -- | Translate a diagram by the given distance in the x (horizontal)
 --   direction.
-translateX :: (Transformable t, V t ~ R2) => Double -> t -> t
+translateX :: (Transformable t, V t ~ V2 b, Num b) => b -> t -> t
 translateX = transform . translationX
 
 -- | Construct a transformation which translates by the given distance
 --   in the y (vertical) direction.
-translationY :: Double -> T2D
+translationY :: Num b => b -> T2 b
 translationY y = translation (0 & y)
 
 -- | Translate a diagram by the given distance in the y (vertical)
 --   direction.
-translateY :: (Transformable t, V t ~ R2) => Double -> t -> t
+translateY :: (Transformable t, V t ~ V2 b, Num b) => b -> t -> t
 translateY = transform . translationY
 
 -- Reflection ----------------------------------------------
