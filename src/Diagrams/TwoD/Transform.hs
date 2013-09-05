@@ -65,7 +65,7 @@ import           Data.Semigroup
 
 -- | Create a transformation which performs a rotation about the local
 --   origin by the given angle.  See also 'rotate'.
-rotation :: Angle a => a -> T2D
+rotation :: (Angle a, BasicNumType a ~ Double) => a -> T2D
 rotation ang = fromLinear r (linv r)
   where
     r            = rot theta <-> rot (-theta)
@@ -85,23 +85,23 @@ rotation ang = fromLinear r (linv r)
 --   yield an error since GHC cannot figure out which sort of angle
 --   you want to use.  In this common situation you can use
 --   'rotateBy', which is specialized to take a 'Turn' argument.
-rotate :: (Transformable t, V t ~ R2, Angle a) => a -> t -> t
+rotate :: (Transformable t, V t ~ R2, Angle a, BasicNumType a ~ Double) => a -> t -> t
 rotate = transform . rotation
 
 -- | A synonym for 'rotate', specialized to only work with
 --   @Turn@ arguments; it can be more convenient to write
 --   @rotateBy (1\/4)@ than @'rotate' (1\/4 :: 'Turn')@.
-rotateBy :: (Transformable t, V t ~ R2) => Turn -> t -> t
+rotateBy :: (Transformable t, V t ~ R2) => TurnD -> t -> t
 rotateBy = transform . rotation
 
 -- | @rotationAbout p@ is a rotation about the point @p@ (instead of
 --   around the local origin).
-rotationAbout :: Angle a => P2D -> a -> T2D
+rotationAbout :: (Angle a, BasicNumType a ~ Double) => P2D -> a -> T2D
 rotationAbout p angle = conjugate (translation (origin .-. p)) (rotation angle)
 
 -- | @rotateAbout p@ is like 'rotate', except it rotates around the
 --   point @p@ instead of around the local origin.
-rotateAbout :: (Transformable t, V t ~ R2, Angle a) => P2D -> a -> t -> t
+rotateAbout :: (Transformable t, V t ~ R2, Angle a, BasicNumType a ~ Double) => P2D -> a -> t -> t
 rotateAbout p angle = rotate angle `under` translation (origin .-. p)
 
 -- Scaling -------------------------------------------------
@@ -206,7 +206,7 @@ reflectY = transform reflectionY
 --   the point @p@ and vector @v@.
 reflectionAbout :: P2D -> R2 -> T2D
 reflectionAbout p v =
-  conjugate (rotation (-direction v :: Rad) <> translation (origin .-. p))
+  conjugate (rotation (-direction v :: Rad Double) <> translation (origin .-. p))
             reflectionY
 
 -- | @reflectAbout p v@ reflects a diagram in the line determined by

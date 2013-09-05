@@ -194,8 +194,8 @@ startTangent (Linear (OffsetClosed x1)) = (normalized x1)
 spine :: Trail R2 -> Double -> Double -> Double -> Trail R2
 spine tr tw hw size = tS <> shaft <> hS
   where
-    tAngle = direction . startTangent $ (head $ trailSegments tr) :: Turn
-    hAngle = direction . endTangent $ (last $ trailSegments tr) :: Turn
+    tAngle = direction . startTangent $ (head $ trailSegments tr) :: Turn Double
+    hAngle = direction . endTangent $ (last $ trailSegments tr) :: Turn Double
     shaft = tr # scale size
     hSpine = trailFromOffsets [unitX] # scale hw # rotateBy hAngle
     tSpine = trailFromOffsets [unitX] # scale tw # rotateBy tAngle
@@ -234,8 +234,8 @@ arrow' opts s e = a # rotateBy (a0 - a1) # moveTo s
     tr = arrowShaft opts
     tw = tw' + tailGap opts
     hw = hw' + headGap opts
-    tAngle = direction . startTangent $ (head $ trailSegments tr) :: Turn
-    hAngle = direction . endTangent $ (last $ trailSegments tr) :: Turn
+    tAngle = direction . startTangent $ (head $ trailSegments tr) :: Turn Double
+    hAngle = direction . endTangent $ (last $ trailSegments tr) :: Turn Double
     u = e .-. s
     sd = shaftScale tr tw hw (magnitude u)
     tr' = tr # scale sd
@@ -266,13 +266,13 @@ connect' opts n1 n2 =
 -- | Connect two diagrams with an aribrary trail at point on the perimeter of
 -- | the diagrams, choosen by angle.
 connectPerim
-  :: (Renderable (Path R2) b, IsName n1, IsName n2, Angle a)
+  :: (Renderable (Path R2) b, IsName n1, IsName n2, Angle a, BasicNumType a ~ Double)
   => n1 -> n2 -> a -> a
   -> (Diagram b R2 -> Diagram b R2)
 connectPerim = connectPerim' def
 
 connectPerim'
-  :: (Renderable (Path R2) b, IsName n1, IsName n2, Angle a)
+  :: (Renderable (Path R2) b, IsName n1, IsName n2, Angle a, BasicNumType a ~ Double)
   => ArrowOpts -> n1 -> n2 -> a -> a
   -> (Diagram b R2 -> Diagram b R2)
 connectPerim' opts n1 n2 a1 a2 =

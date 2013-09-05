@@ -35,6 +35,7 @@ module Diagrams.TwoD.Types
        , Angle(..)
        , Turn(..), CircleFrac, Rad(..), Deg(..)
        , fullCircle, convertAngle
+       , TurnD
 
        , HasBasicNumType(..), IsBasicNumType
        ) where
@@ -266,7 +267,7 @@ instance IsBasicNumType a => HasBasicNumType (Deg a) where
 
 
 -- | Type class for types that measure angles.
-class HasBasicNumType a => Angle a where
+class (Num a, HasBasicNumType a) => Angle a where
 
   -- | Convert to a turn, /i.e./ a fraction of a circle.
   toTurn   :: a -> Turn (BasicNumType a)

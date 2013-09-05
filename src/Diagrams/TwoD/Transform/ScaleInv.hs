@@ -76,7 +76,7 @@ instance (V t ~ R2, HasOrigin t) => HasOrigin (ScaleInv t) where
 instance (V t ~ R2, Transformable t) => Transformable (ScaleInv t) where
   transform tr (ScaleInv t v l) = ScaleInv (trans . rot $ t) (rot v) l'
     where
-      angle :: Rad
+      angle :: Rad Double
       angle = direction (transform tr v) - direction v
       rot :: (Transformable t, V t ~ R2) => t -> t
       rot = rotateAbout l angle

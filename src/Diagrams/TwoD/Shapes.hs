@@ -139,7 +139,7 @@ rect w h = trailLike . head . pathTrails $ unitSquare # scaleX w # scaleY h
 regPoly :: (TrailLike t, V t ~ R2) => Int -> Double -> t
 regPoly n l = polygon with { polyType =
                                PolySides
-                                 (repeat (1/ fromIntegral n :: Turn))
+                                 (repeat (1/ fromIntegral n :: Turn Double))
                                  (replicate (n-1) l)
                            , polyOrient = OrientH
                            }
@@ -300,7 +300,7 @@ roundedRect' w h opts
         mkCorner k r | r == 0    = mempty
                      | r < 0     = doArc 3 2
                      | otherwise = doArc 0 1
-                     where doArc d d' = arc' r ((k+d)/4) ((k+d')/4:: Turn)
+                     where doArc d d' = arc' r ((k+d)/4) ((k+d')/4:: Turn Double)
 
 data RoundedRectOpts = RoundedRectOpts { radiusTL :: Double
                                        , radiusTR :: Double
