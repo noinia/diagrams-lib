@@ -6,6 +6,9 @@
 {-# LANGUAGE TypeOperators              #-}
 {-# LANGUAGE TypeSynonymInstances       #-}
 
+{-# LANGUAGE FlexibleContexts           #-}
+{-# LANGUAGE UndecidableInstances       #-}
+
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 -----------------------------------------------------------------------------
 -- |
@@ -20,7 +23,8 @@
 
 module Diagrams.TwoD.Types
        ( -- * 2D Euclidean space
-         R2(..), r2, unr2
+         V2, v2, unv2
+       , R2, r2, unr2
        , P2, p2, unp2
        , T2
 
@@ -47,11 +51,11 @@ import           Data.Typeable
 -- | The two-dimensional Euclidean vector space R^2.  This type is
 --   intentionally abstract.
 --
---   * To construct a vector, use 'r2', or '&' (from "Diagrams.Coordinates"):
+--   * To construct a vector, use 'v2', or '&' (from "Diagrams.Coordinates"):
 --
 -- @
--- r2 (3,4) :: R2
--- 3 & 4    :: R2
+-- r2 (3,4) :: V2 a
+-- 3 & 4    :: V2 a
 -- @
 --
 --     Note that "Diagrams.Coordinates" is not re-exported by
@@ -72,41 +76,41 @@ import           Data.Typeable
 -- foo (coords -> x :& y) = ...
 -- @
 
-data R2 = R2 {-# UNPACK #-} !Double
-             {-# UNPACK #-} !Double
+data V2 a = V2 a a
   deriving (Eq, Ord, Typeable)
 
-instance AdditiveGroup R2 where
-  zeroV = R2 0 0
-  R2 x1 y1 ^+^ R2 x2 y2 = R2 (x1 + x2) (y1 + y2)
-  negateV (R2 x y) = R2 (-x) (-y)
+instance Num a => AdditiveGroup (V2 a) where
+  zeroV = V2 0 0
+  V2 x1 y1 ^+^ V2 x2 y2 = V2 (x1 + x2) (y1 + y2)
+  negateV (V2 x y) = V2 (-x) (-y)
 
-instance Num R2 where
+instance Num a => Num (V2 a) where
   (+)                 = (^+^)
-  R2 x1 y1 * R2 x2 y2 = R2 (x1 * x2) (y1 * y2)  -- this is sort of bogus
+  V2 x1 y1 * V2 x2 y2 = V2 (x1 * x2) (y1 * y2)  -- this is sort of bogus
   (-)                 = (^-^)
   negate              = negateV
-  abs (R2 x y)        = R2 (abs x) (abs y)
-  signum (R2 x y)     = R2 (signum x) (signum y)
-  fromInteger i       = R2 i' i'
+  abs (V2 x y)        = V2 (abs x) (abs y)
+  signum (V2 x y)     = V2 (signum x) (signum y)
+  fromInteger i       = V2 i' i'
     where i' = fromInteger i
 
-instance Fractional R2 where
-  R2 x1 y1 / R2 x2 y2 = R2 (x1/x2) (y1/y2)
-  recip (R2 x y) = R2 (recip x) (recip y)
-  fromRational r = R2 r' r'
+instance Fractional a => Fractional (V2 a) where
+  V2 x1 y1 / V2 x2 y2 = V2 (x1/x2) (y1/y2)
+  recip (V2 x y) = V2 (recip x) (recip y)
+  fromRational r = V2 r' r'
     where r' = fromRational r
 
-instance Show R2 where
-  showsPrec p (R2 x y) = showParen (p >= 7) $
+instance (Eq a, Num a, Show a) => Show (V2 a) where
+  showsPrec p (V2 x y) = showParen (p >= 7) $
     showCoord x . showString " & " . showCoord y
    where
-    showCoord c | c < 0     = showParen True (shows c)
-                | otherwise = shows x
+    isNegative c = not $ c == abs c
+    showCoord c | isNegative c = showParen True (shows c)
+                | otherwise    = shows x
 
-instance Read R2 where
+instance Read a => Read (V2 a) where
   readsPrec d r = readParen (d > app_prec)
-                  (\rr -> [ (R2 x y, r''')
+                  (\rr -> [ (V2 x y, r''')
                           | (x,r')    <- readsPrec (amp_prec + 1) rr
                           , ("&",r'') <- lex r'
                           , (y,r''')  <- readsPrec (amp_prec + 1) r''
@@ -116,40 +120,50 @@ instance Read R2 where
       app_prec = 10
       amp_prec = 7
 
+
+v2       :: (a,a) -> V2 a
+v2 (x,y) = V2 x y
+
+unv2          :: V2 a -> (a, a)
+unv2 (V2 x y) = (x,y)
+
+
+type R2 = V2 Double
+
 -- | Construct a 2D vector from a pair of components.  See also '&'.
 r2 :: (Double, Double) -> R2
-r2 (x,y) = R2 x y
+r2 = v2
 
 -- | Convert a 2D vector back into a pair of components.  See also 'coords'.
 unr2 :: R2 -> (Double, Double)
-unr2 (R2 x y) = (x,y)
+unr2 = unv2
 
-type instance V R2 = R2
+type instance V (V2 a) = (V2 a)
 
-instance VectorSpace R2 where
-  type Scalar R2 = Double
-  s *^ R2 x y = R2 (s*x) (s*y)
+instance Num a => VectorSpace (V2 a) where
+  type Scalar (V2 a) = a
+  s *^ V2 x y = V2 (s*x) (s*y)
 
-instance HasBasis R2 where
-  type Basis R2 = Either () () -- = Basis (Double, Double)
-  basisValue (Left () )          = R2 1 0
-  basisValue (Right ())          = R2 0 1
+instance Num a => HasBasis (V2 a) where
+  type Basis (V2 a) = Either () () -- = Basis (Double, Double)
+  basisValue (Left () )          = V2 1 0
+  basisValue (Right ())          = V2 0 1
 
-  decompose (R2 x y)             = [(Left (), x), (Right (), y)]
+  decompose (V2 x y)             = [(Left (), x), (Right (), y)]
 
-  decompose' (R2 x _) (Left ())  = x
-  decompose' (R2 _ y) (Right ()) = y
+  decompose' (V2 x _) (Left ())  = x
+  decompose' (V2 _ y) (Right ()) = y
 
-instance InnerSpace R2 where
-  (R2 x1 y1) <.> (R2 x2 y2) = x1*x2 + y1*y2
+instance (Num a, AdditiveGroup a) => InnerSpace (V2 a) where
+  (V2 x1 y1) <.> (V2 x2 y2) = x1*x2 + y1*y2
 
-instance Coordinates R2 where
-  type FinalCoord R2     = Double
-  type PrevDim R2        = Double
-  type Decomposition R2  = Double :& Double
+instance Coordinates (V2 a) where
+  type FinalCoord (V2 a)     = a
+  type PrevDim (V2 a)        = a
+  type Decomposition (V2 a)  = a :& a
 
-  x & y           = R2 x y
-  coords (R2 x y) = x :& y
+  x & y           = V2 x y
+  coords (V2 x y) = x :& y
 
 -- | Points in R^2.  This type is intentionally abstract.
 --
