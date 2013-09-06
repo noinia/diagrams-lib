@@ -7,6 +7,7 @@
 {-# LANGUAGE ViewPatterns               #-}
 {-# LANGUAGE UndecidableInstances       #-}
 
+{-# LANGUAGE ConstraintKinds            #-}
 
 
 {-# OPTIONS_GHC -fno-warn-orphans #-}
@@ -68,6 +69,25 @@ import           Diagrams.TwoD.Segment ()
 import           Diagrams.TwoD.Types
 import           Diagrams.Util         (tau)
 
+
+------------------------------------------------------------
+--  Some shorthands for types-------------------------------
+------------------------------------------------------------
+
+-- | Ord and RealFloat
+type OrdFloat b = (Ord b, RealFloat b)
+
+-- | Shortcut for the types that have themselves as vector spaces: basically
+-- the standard numeric types (double, Int, Integer, etc)
+type SelfVectorSpace t = (VectorSpace t, Scalar t ~ t)
+
+-- | A segment
+type CSegment v = Segment Closed v
+
+
+-- | Expresses that object p, which is parameterized over vector space v, is renderable
+type Renderable' p v c = (Renderable (p v) c, Traced (CSegment v))
+
 ------------------------------------------------------------
 --  Trail and path traces  ---------------------------------
 ------------------------------------------------------------
@@ -96,7 +116,6 @@ instance ( InnerSpace v        -- from withLine
         mempty
     . lineSegments
 
-type CSegment v = Segment Closed v
 
 instance Traced (Trail v)       -- from calling getTrace on seg
          => Traced (Path v) where
@@ -120,11 +139,22 @@ instance Traced (Trail v)       -- from calling getTrace on seg
 --   inferring the type of @stroke@.  The solution is to give a type
 --   signature to expressions involving @stroke@, or (recommended)
 --   upgrade GHC (the bug is fixed in 7.0.2 onwards).
-stroke :: Renderable (Path R2) c
-       => Path R2 -> Diagram c R2
+
+-- stroke :: ( Renderable (Path (V2 b)) c
+--           , Traced (CSegment (V2 b))
+--           , OrdFloat b, SelfVectorSpace b
+--           ) => Path (V2 b) -> Diagram c (V2 b)
+stroke :: ( Renderable' Path (V2 b) c
+          , OrdFloat b, SelfVectorSpace b
+          ) => Path (V2 b) -> Diagram c (V2 b)
 stroke = stroke' (def :: StrokeOpts ())
 
-instance Renderable (Path R2) c => TrailLike (QDiagram c R2 Any) where
+
+
+
+instance ( Renderable' Path (V2 b) c
+         , OrdFloat b, SelfVectorSpace b
+         ) => TrailLike (QDiagram c (V2 b) Any) where
   trailLike = stroke . trailLike
 
 -- | A variant of 'stroke' that takes an extra record of options to
@@ -134,7 +164,10 @@ instance Renderable (Path R2) c => TrailLike (QDiagram c R2 Any) where
 --
 --   'StrokeOpts' is an instance of 'Default', so @stroke' 'with' {
 --   ... }@ syntax may be used.
-stroke' :: (Renderable (Path R2) c, IsName a) => StrokeOpts a -> Path R2 -> Diagram c R2
+stroke' :: ( Renderable' Path (V2 b) c
+           , OrdFloat b, SelfVectorSpace b
+           , IsName a
+           ) => StrokeOpts a -> Path (V2 b) -> Diagram c (V2 b)
 stroke' opts path
   | null (pathTrails pLines) =           mkP pLoops
   | null (pathTrails pLoops) = mkP pLines
@@ -196,47 +229,61 @@ instance Default (StrokeOpts a) where
 --   The solution is to give a type signature to expressions involving
 --   @strokeTrail@, or (recommended) upgrade GHC (the bug is fixed in 7.0.2
 --   onwards).
-strokeTrail :: (Renderable (Path R2) b) => Trail R2 -> Diagram b R2
+strokeTrail :: ( Renderable' Path (V2 b) c
+               , OrdFloat b, SelfVectorSpace b
+               ) => Trail (V2 b) -> Diagram c (V2 b)
 strokeTrail = stroke . pathFromTrail
 
 -- | Deprecated synonym for 'strokeTrail'.
-strokeT :: (Renderable (Path R2) b) => Trail R2 -> Diagram b R2
+strokeT :: (Renderable (Path R2) c) => Trail R2 -> Diagram c R2
 strokeT = strokeTrail
 
 -- | A composition of 'stroke'' and 'pathFromTrail' for conveniently
 --   converting a trail directly into a diagram.
-strokeTrail' :: (Renderable (Path R2) b, IsName a)
-             => StrokeOpts a -> Trail R2 -> Diagram b R2
+strokeTrail' :: ( Renderable' Path (V2 b) c
+                , OrdFloat b, SelfVectorSpace b
+                , IsName a
+                ) => StrokeOpts a -> Trail (V2 b) -> Diagram c (V2 b)
 strokeTrail' opts = stroke' opts . pathFromTrail
 
 -- | Deprecated synonym for 'strokeTrail''.
-strokeT' :: (Renderable (Path R2) b, IsName a)
-         => StrokeOpts a -> Trail R2 -> Diagram b R2
+strokeT' :: (Renderable (Path R2) c, IsName a)
+         => StrokeOpts a -> Trail R2 -> Diagram c R2
 strokeT' = strokeTrail'
 
--- | A composition of 'strokeT' and 'wrapLine' for conveniently
+-- | A composition of 'strokeTrail' and 'wrapLine' for conveniently
 --   converting a line directly into a diagram.
-strokeLine :: (Renderable (Path R2) b) => Trail' Line R2 -> Diagram b R2
-strokeLine = strokeT . wrapLine
+strokeLine :: ( Renderable' Path (V2 b) c
+              , OrdFloat b, SelfVectorSpace b
+              ) => Trail' Line (V2 b) -> Diagram c (V2 b)
+strokeLine = strokeTrail . wrapLine
 
 -- | A composition of 'strokeT' and 'wrapLoop' for conveniently
 --   converting a loop directly into a diagram.
-strokeLoop :: (Renderable (Path R2) b) => Trail' Loop R2 -> Diagram b R2
-strokeLoop = strokeT . wrapLoop
+strokeLoop :: (Renderable' Path (V2 b) c
+              , OrdFloat b, SelfVectorSpace b
+              ) => Trail' Loop (V2 b) -> Diagram c (V2 b)
+strokeLoop = strokeTrail . wrapLoop
 
 -- | A convenience function for converting a @Located Trail@ directly
 --   into a diagram; @strokeLocT = stroke . trailLike@.
-strokeLocT :: (Renderable (Path R2) b) => Located (Trail R2) -> Diagram b R2
+strokeLocT :: ( Renderable' Path (V2 b) c
+              , OrdFloat b, SelfVectorSpace b
+              ) => Located (Trail (V2 b)) -> Diagram c (V2 b)
 strokeLocT = stroke . trailLike
 
 -- | A convenience function for converting a @Located@ line directly
 --   into a diagram; @strokeLocLine = stroke . trailLike . mapLoc wrapLine@.
-strokeLocLine :: (Renderable (Path R2) b) => Located (Trail' Line R2) -> Diagram b R2
+strokeLocLine :: ( Renderable' Path (V2 b) c
+                 , OrdFloat b, SelfVectorSpace b
+                 ) => Located (Trail' Line (V2 b)) -> Diagram c (V2 b)
 strokeLocLine = stroke . trailLike . mapLoc wrapLine
 
 -- | A convenience function for converting a @Located@ loop directly
 --   into a diagram; @strokeLocLoop = stroke . trailLike . mapLoc wrapLoop@.
-strokeLocLoop :: (Renderable (Path R2) b) => Located (Trail' Loop R2) -> Diagram b R2
+strokeLocLoop :: (Renderable' Path (V2 b) c
+                 , OrdFloat b, SelfVectorSpace b
+                 ) => Located (Trail' Loop (V2 b)) -> Diagram c (V2 b)
 strokeLocLoop = stroke . trailLike . mapLoc wrapLoop
 
 ------------------------------------------------------------
@@ -259,7 +306,7 @@ data FillRule = Winding  -- ^ Interior points are those with a nonzero
 instance Default FillRule where
   def = Winding
 
-runFillRule :: FillRule -> P2D -> Path R2 -> Bool
+runFillRule :: (OrdFloat b, SelfVectorSpace b) => FillRule -> P2 b -> Path (V2 b) -> Bool
 runFillRule Winding = isInsideWinding
 runFillRule EvenOdd = isInsideEvenOdd
 
@@ -279,7 +326,7 @@ getFillRule (FillRuleA (Last r)) = r
 fillRule :: HasStyle a => FillRule -> a -> a
 fillRule = applyAttr . FillRuleA . Last
 
-cross :: R2 -> R2 -> Double
+cross :: Num b => V2 b -> V2 b-> b
 cross (coords -> x :& y) (coords -> x' :& y') = x * y' - y * x'
 
 -- XXX link to more info on this
@@ -288,7 +335,7 @@ cross (coords -> x :& y) (coords -> x' :& y') = x * y' - y * x'
 --   by testing whether the point's /winding number/ is nonzero. Note
 --   that @False@ is /always/ returned for /open/ paths, regardless of
 --   the winding number.
-isInsideWinding :: P2D -> Path R2 -> Bool
+isInsideWinding :: (OrdFloat b, SelfVectorSpace b) => P2 b -> Path (V2 b) -> Bool
 isInsideWinding p = (/= 0) . crossings p
 
 -- | Test whether the given point is inside the given (closed) path,
@@ -296,17 +343,18 @@ isInsideWinding p = (/= 0) . crossings p
 --   x direction crosses the path an even (outside) or odd (inside)
 --   number of times.  Note that @False@ is /always/ returned for
 --   /open/ paths, regardless of the number of crossings.
-isInsideEvenOdd :: P2D -> Path R2 -> Bool
+isInsideEvenOdd :: (OrdFloat b, SelfVectorSpace b) => P2 b -> Path (V2 b) -> Bool
 isInsideEvenOdd p = odd . crossings p
 
 -- | Compute the sum of /signed/ crossings of a path as we travel in the
 --   positive x direction from a given point.
-crossings :: P2D -> Path R2 -> Int
+crossings :: (OrdFloat b, SelfVectorSpace b) => P2 b -> Path (V2 b) -> Int
 crossings p = F.sum . map (trailCrossings p) . pathTrails
 
 -- | Compute the sum of signed crossings of a trail starting from the
 --   given point in the positive x direction.
-trailCrossings :: P2D -> Located (Trail R2) -> Int
+trailCrossings :: (RealFloat b, Ord b, SelfVectorSpace b
+                  ) => P2 b -> Located (Trail (V2 b)) -> Int
 
   -- non-loop trails have no inside or outside, so don't contribute crossings
 trailCrossings _ t | not (isLoop (unLoc t)) = 0
@@ -342,6 +390,7 @@ trailCrossings p@(unp2 -> (x,y)) tr
                                | otherwise                            ->  0
 
     isLeft a b = cross (b .-. a) (p .-. a)
+
 
 ------------------------------------------------------------
 --  Clipping  ----------------------------------------------
