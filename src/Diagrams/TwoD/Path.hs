@@ -5,6 +5,10 @@
 {-# LANGUAGE MultiParamTypeClasses      #-}
 {-# LANGUAGE TypeFamilies               #-}
 {-# LANGUAGE ViewPatterns               #-}
+{-# LANGUAGE UndecidableInstances       #-}
+
+
+
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 -----------------------------------------------------------------------------
 -- |
@@ -72,15 +76,35 @@ import           Diagrams.Util         (tau)
 
 -- XXX can the efficiency of this be improved?  See the comment in
 -- Diagrams.Path on the Enveloped instance for Trail.
-instance Traced (Trail R2) where
+-- instance ( OrderedField b
+-- instance ( InnerSpace (V2 b)        -- from withLine
+--          , OrderedField b           -- from withLine
+--          , Traced (CSegment (V2 b)) -- from calling getTrace on seg
+--          ) => Traced (Trail (V2 b)) where
+--   getTrace = withLine $
+--       foldr
+--         (\seg bds -> moveOriginBy (negateV . atEnd $ seg) bds <> getTrace seg)
+--         mempty
+--     . lineSegments
+instance ( InnerSpace v        -- from withLine
+         , OrderedField (Scalar v)           -- from withLine
+         , Traced (CSegment v) -- from calling getTrace on seg
+         ) => Traced (Trail v) where
   getTrace = withLine $
       foldr
         (\seg bds -> moveOriginBy (negateV . atEnd $ seg) bds <> getTrace seg)
         mempty
     . lineSegments
 
-instance Traced (Path R2) where
+type CSegment v = Segment Closed v
+
+instance Traced (Trail v)       -- from calling getTrace on seg
+         => Traced (Path v) where
   getTrace = F.foldMap getTrace . pathTrails
+
+
+-- instance Traced (Path R2) where
+--   getTrace = F.foldMap getTrace . pathTrails
 
 ------------------------------------------------------------
 --  Constructing path-based diagrams  ----------------------
@@ -96,11 +120,11 @@ instance Traced (Path R2) where
 --   inferring the type of @stroke@.  The solution is to give a type
 --   signature to expressions involving @stroke@, or (recommended)
 --   upgrade GHC (the bug is fixed in 7.0.2 onwards).
-stroke :: Renderable (Path R2) b
-       => Path R2 -> Diagram b R2
+stroke :: Renderable (Path R2) c
+       => Path R2 -> Diagram c R2
 stroke = stroke' (def :: StrokeOpts ())
 
-instance Renderable (Path R2) b => TrailLike (QDiagram b R2 Any) where
+instance Renderable (Path R2) c => TrailLike (QDiagram c R2 Any) where
   trailLike = stroke . trailLike
 
 -- | A variant of 'stroke' that takes an extra record of options to
@@ -110,7 +134,7 @@ instance Renderable (Path R2) b => TrailLike (QDiagram b R2 Any) where
 --
 --   'StrokeOpts' is an instance of 'Default', so @stroke' 'with' {
 --   ... }@ syntax may be used.
-stroke' :: (Renderable (Path R2) b, IsName a) => StrokeOpts a -> Path R2 -> Diagram b R2
+stroke' :: (Renderable (Path R2) c, IsName a) => StrokeOpts a -> Path R2 -> Diagram c R2
 stroke' opts path
   | null (pathTrails pLines) =           mkP pLoops
   | null (pathTrails pLoops) = mkP pLines
@@ -328,13 +352,16 @@ trailCrossings p@(unp2 -> (x,y)) tr
 --   concatenation, so applying multiple clipping paths is sensible.
 --   The clipping region is the intersection of all the applied
 --   clipping paths.
-newtype Clip = Clip { getClip :: [Path R2] }
+newtype Clip b = Clip { getClip :: [Path (V2 b)] }
   deriving (Typeable, Semigroup)
-instance AttributeClass Clip
 
-type instance V Clip = R2
+instance (Num b, Typeable b) => AttributeClass (Clip b)
 
-instance Transformable Clip where
+type instance V (Clip b) = V2 b
+
+instance ( HasLinearMap (V2 b)
+         , OrderedField b
+         ) => Transformable (Clip b) where
   transform t (Clip ps) = Clip (transform t ps)
 
 -- | Clip a diagram by the given path:
@@ -343,7 +370,7 @@ instance Transformable Clip where
 --     path will be drawn.
 --
 --   * The envelope of the diagram is unaffected.
-clipBy :: (HasStyle a, V a ~ R2) => Path R2 -> a -> a
+clipBy :: (HasStyle a, V a ~ V2 b, OrderedField b, Typeable b) => Path (V2 b) -> a -> a
 clipBy = applyTAttr . Clip . (:[])
 
 -- XXX Should include a 'clipTo' function which clips a diagram AND
