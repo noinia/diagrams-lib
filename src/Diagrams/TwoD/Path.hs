@@ -96,7 +96,16 @@ type Renderable' p v c = (Renderable (p v) c, Traced (CSegment v))
 
 -- XXX can the efficiency of this be improved?  See the comment in
 -- Diagrams.Path on the Enveloped instance for Trail.
--- instance ( OrderedField b
+instance ( InnerSpace v            -- from withLine
+         , OrderedField (Scalar v) -- from withLine
+         , Traced (CSegment v)     -- from calling getTrace on seg
+         ) => Traced (Trail v) where
+  getTrace = withLine $
+      foldr
+        (\seg bds -> moveOriginBy (negateV . atEnd $ seg) bds <> getTrace seg)
+        mempty
+    . lineSegments
+
 -- instance ( InnerSpace (V2 b)        -- from withLine
 --          , OrderedField b           -- from withLine
 --          , Traced (CSegment (V2 b)) -- from calling getTrace on seg
@@ -106,15 +115,6 @@ type Renderable' p v c = (Renderable (p v) c, Traced (CSegment v))
 --         (\seg bds -> moveOriginBy (negateV . atEnd $ seg) bds <> getTrace seg)
 --         mempty
 --     . lineSegments
-instance ( InnerSpace v        -- from withLine
-         , OrderedField (Scalar v)           -- from withLine
-         , Traced (CSegment v) -- from calling getTrace on seg
-         ) => Traced (Trail v) where
-  getTrace = withLine $
-      foldr
-        (\seg bds -> moveOriginBy (negateV . atEnd $ seg) bds <> getTrace seg)
-        mempty
-    . lineSegments
 
 
 instance Traced (Trail v)       -- from calling getTrace on seg
