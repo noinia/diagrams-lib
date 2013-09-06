@@ -77,10 +77,6 @@ import           Diagrams.Util         (tau)
 -- | Ord and RealFloat
 type OrdFloat b = (Ord b, RealFloat b)
 
--- | Shortcut for the types that have themselves as vector spaces: basically
--- the standard numeric types (double, Int, Integer, etc)
-type SelfVectorSpace t = (VectorSpace t, Scalar t ~ t)
-
 -- | A segment
 type CSegment v = Segment Closed v
 
@@ -139,13 +135,8 @@ instance Traced (Trail v)       -- from calling getTrace on seg
 --   inferring the type of @stroke@.  The solution is to give a type
 --   signature to expressions involving @stroke@, or (recommended)
 --   upgrade GHC (the bug is fixed in 7.0.2 onwards).
-
--- stroke :: ( Renderable (Path (V2 b)) c
---           , Traced (CSegment (V2 b))
---           , OrdFloat b, SelfVectorSpace b
---           ) => Path (V2 b) -> Diagram c (V2 b)
 stroke :: ( Renderable' Path (V2 b) c
-          , OrdFloat b, SelfVectorSpace b
+          , OrdFloat b, AdditiveGroup b
           ) => Path (V2 b) -> Diagram c (V2 b)
 stroke = stroke' (def :: StrokeOpts ())
 
@@ -153,7 +144,7 @@ stroke = stroke' (def :: StrokeOpts ())
 
 
 instance ( Renderable' Path (V2 b) c
-         , OrdFloat b, SelfVectorSpace b
+         , OrdFloat b, AdditiveGroup b
          ) => TrailLike (QDiagram c (V2 b) Any) where
   trailLike = stroke . trailLike
 
@@ -165,7 +156,7 @@ instance ( Renderable' Path (V2 b) c
 --   'StrokeOpts' is an instance of 'Default', so @stroke' 'with' {
 --   ... }@ syntax may be used.
 stroke' :: ( Renderable' Path (V2 b) c
-           , OrdFloat b, SelfVectorSpace b
+           , OrdFloat b, AdditiveGroup b
            , IsName a
            ) => StrokeOpts a -> Path (V2 b) -> Diagram c (V2 b)
 stroke' opts path
@@ -230,7 +221,7 @@ instance Default (StrokeOpts a) where
 --   @strokeTrail@, or (recommended) upgrade GHC (the bug is fixed in 7.0.2
 --   onwards).
 strokeTrail :: ( Renderable' Path (V2 b) c
-               , OrdFloat b, SelfVectorSpace b
+               , OrdFloat b, AdditiveGroup b
                ) => Trail (V2 b) -> Diagram c (V2 b)
 strokeTrail = stroke . pathFromTrail
 
@@ -241,7 +232,7 @@ strokeT = strokeTrail
 -- | A composition of 'stroke'' and 'pathFromTrail' for conveniently
 --   converting a trail directly into a diagram.
 strokeTrail' :: ( Renderable' Path (V2 b) c
-                , OrdFloat b, SelfVectorSpace b
+                , OrdFloat b, AdditiveGroup b
                 , IsName a
                 ) => StrokeOpts a -> Trail (V2 b) -> Diagram c (V2 b)
 strokeTrail' opts = stroke' opts . pathFromTrail
@@ -254,35 +245,35 @@ strokeT' = strokeTrail'
 -- | A composition of 'strokeTrail' and 'wrapLine' for conveniently
 --   converting a line directly into a diagram.
 strokeLine :: ( Renderable' Path (V2 b) c
-              , OrdFloat b, SelfVectorSpace b
+              , OrdFloat b, AdditiveGroup b
               ) => Trail' Line (V2 b) -> Diagram c (V2 b)
 strokeLine = strokeTrail . wrapLine
 
 -- | A composition of 'strokeT' and 'wrapLoop' for conveniently
 --   converting a loop directly into a diagram.
 strokeLoop :: (Renderable' Path (V2 b) c
-              , OrdFloat b, SelfVectorSpace b
+              , OrdFloat b, AdditiveGroup b
               ) => Trail' Loop (V2 b) -> Diagram c (V2 b)
 strokeLoop = strokeTrail . wrapLoop
 
 -- | A convenience function for converting a @Located Trail@ directly
 --   into a diagram; @strokeLocT = stroke . trailLike@.
 strokeLocT :: ( Renderable' Path (V2 b) c
-              , OrdFloat b, SelfVectorSpace b
+              , OrdFloat b, AdditiveGroup b
               ) => Located (Trail (V2 b)) -> Diagram c (V2 b)
 strokeLocT = stroke . trailLike
 
 -- | A convenience function for converting a @Located@ line directly
 --   into a diagram; @strokeLocLine = stroke . trailLike . mapLoc wrapLine@.
 strokeLocLine :: ( Renderable' Path (V2 b) c
-                 , OrdFloat b, SelfVectorSpace b
+                 , OrdFloat b, AdditiveGroup b
                  ) => Located (Trail' Line (V2 b)) -> Diagram c (V2 b)
 strokeLocLine = stroke . trailLike . mapLoc wrapLine
 
 -- | A convenience function for converting a @Located@ loop directly
 --   into a diagram; @strokeLocLoop = stroke . trailLike . mapLoc wrapLoop@.
 strokeLocLoop :: (Renderable' Path (V2 b) c
-                 , OrdFloat b, SelfVectorSpace b
+                 , OrdFloat b, AdditiveGroup b
                  ) => Located (Trail' Loop (V2 b)) -> Diagram c (V2 b)
 strokeLocLoop = stroke . trailLike . mapLoc wrapLoop
 
@@ -306,7 +297,7 @@ data FillRule = Winding  -- ^ Interior points are those with a nonzero
 instance Default FillRule where
   def = Winding
 
-runFillRule :: (OrdFloat b, SelfVectorSpace b) => FillRule -> P2 b -> Path (V2 b) -> Bool
+runFillRule :: (OrdFloat b, AdditiveGroup b) => FillRule -> P2 b -> Path (V2 b) -> Bool
 runFillRule Winding = isInsideWinding
 runFillRule EvenOdd = isInsideEvenOdd
 
@@ -335,7 +326,7 @@ cross (coords -> x :& y) (coords -> x' :& y') = x * y' - y * x'
 --   by testing whether the point's /winding number/ is nonzero. Note
 --   that @False@ is /always/ returned for /open/ paths, regardless of
 --   the winding number.
-isInsideWinding :: (OrdFloat b, SelfVectorSpace b) => P2 b -> Path (V2 b) -> Bool
+isInsideWinding :: (OrdFloat b, AdditiveGroup b) => P2 b -> Path (V2 b) -> Bool
 isInsideWinding p = (/= 0) . crossings p
 
 -- | Test whether the given point is inside the given (closed) path,
@@ -343,17 +334,17 @@ isInsideWinding p = (/= 0) . crossings p
 --   x direction crosses the path an even (outside) or odd (inside)
 --   number of times.  Note that @False@ is /always/ returned for
 --   /open/ paths, regardless of the number of crossings.
-isInsideEvenOdd :: (OrdFloat b, SelfVectorSpace b) => P2 b -> Path (V2 b) -> Bool
+isInsideEvenOdd :: (OrdFloat b, AdditiveGroup b) => P2 b -> Path (V2 b) -> Bool
 isInsideEvenOdd p = odd . crossings p
 
 -- | Compute the sum of /signed/ crossings of a path as we travel in the
 --   positive x direction from a given point.
-crossings :: (OrdFloat b, SelfVectorSpace b) => P2 b -> Path (V2 b) -> Int
+crossings :: (OrdFloat b, AdditiveGroup b) => P2 b -> Path (V2 b) -> Int
 crossings p = F.sum . map (trailCrossings p) . pathTrails
 
 -- | Compute the sum of signed crossings of a trail starting from the
 --   given point in the positive x direction.
-trailCrossings :: (RealFloat b, Ord b, SelfVectorSpace b
+trailCrossings :: (OrdFloat b, AdditiveGroup b
                   ) => P2 b -> Located (Trail (V2 b)) -> Int
 
   -- non-loop trails have no inside or outside, so don't contribute crossings
@@ -362,15 +353,16 @@ trailCrossings _ t | not (isLoop (unLoc t)) = 0
 trailCrossings p@(unp2 -> (x,y)) tr
   = sum . map test $ fixTrail tr
   where
+    toVecAndY (unp2 -> t@(_,y)) = (v2 t,y)
     test (FLinear a@(unp2 -> (_,ay)) b@(unp2 -> (_,by)))
       | ay <= y && by > y && isLeft a b > 0 =  1
       | by <= y && ay > y && isLeft a b < 0 = -1
       | otherwise                           =  0
 
-    test c@(FCubic (unp2 -> x1@(_,x1y))
-                   (unp2 -> c1@(_,c1y))
-                   (unp2 -> c2@(_,c2y))
-                   (unp2 -> x2@(_,x2y))
+    test c@(FCubic (toVecAndY -> (x1,x1y))
+                   (toVecAndY -> (c1,c1y))
+                   (toVecAndY -> (c2,c2y))
+                   (toVecAndY -> (x2,x2y))
            ) =
         sum . map testT $ ts
       where ts = filter (liftA2 (&&) (>=0) (<=1))
@@ -381,9 +373,9 @@ trailCrossings p@(unp2 -> (x,y)) tr
             testT t = let (unp2 -> (px,_)) = c `atParam` t
                       in  if px > x then signFromDerivAt t else 0
             signFromDerivAt t =
-              let (dx,dy) = (3*t*t) *^ ((-1)*^x1 ^+^ 3*^c1 ^-^ 3*^c2 ^+^ x2)
-                        ^+^ (2*t)   *^ (3*^x1 ^-^ 6*^c1 ^+^ 3*^c2)
-                        ^+^            ((-3)*^x1 ^+^ 3*^c1)
+              let (unv2 -> (dx,dy)) = (3*t*t) *^ ((-1)*^x1 ^+^ 3*^c1 ^-^ 3*^c2 ^+^ x2)
+                                      ^+^ (2*t)   *^ (3*^x1 ^-^ 6*^c1 ^+^ 3*^c2)
+                                      ^+^            ((-3)*^x1 ^+^ 3*^c1)
                   ang = atan2 dy dx
               in  case () of _ | 0      < ang && ang < tau/2 && t < 1 ->  1
                                | -tau/2 < ang && ang < 0     && t > 0 -> -1
