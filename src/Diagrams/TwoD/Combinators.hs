@@ -78,7 +78,7 @@ infixl 6 |||
 --   combined diagram is the same as the local origin of the first.
 --   @(===)@ is associative and has 'mempty' as an identity.  See the
 --   documentation of 'beside' for more information.
-(===) :: (Juxtaposable a, V a ~ R2, Semigroup a) => a -> a -> a
+(===) :: (Juxtaposable a, V a ~ (V2 b), Num b, Semigroup a) => a -> a -> a
 (===) = beside (negateV unitY)
 
 -- | Place two diagrams (or other juxtaposable objects) horizontally
@@ -87,7 +87,7 @@ infixl 6 |||
 --   is the same as the local origin of the first.  @(===)@ is
 --   associative and has 'mempty' as an identity.  See the
 --   documentation of 'beside' for more information.
-(|||) :: (Juxtaposable a, V a ~ R2, Semigroup a) => a -> a -> a
+(|||) :: (Juxtaposable a, V a ~ (V2 b), Num b, Semigroup a) => a -> a -> a
 (|||) = beside unitX
 
 -- | Place two diagrams (or other juxtaposable objects) adjacent to one
@@ -95,7 +95,8 @@ infixl 6 |||
 --   'th' from the first.  The local origin of the resulting combined
 --   diagram is the same as the local origin of the first.
 --   See the documentation of 'beside' for more information.
-atAngle :: (Juxtaposable a, V a ~ R2, Semigroup a, Angle b, NumericType b ~ Double) => b -> a -> a -> a
+atAngle :: (Juxtaposable a, V a ~ (V2 b), Angle u,
+            Semigroup a, Floating b, NumericType u ~ b) => u -> a -> a -> a
 atAngle th = beside (fromDirection th)
 
 -- | Lay out a list of juxtaposable objects in a row from left to right,
@@ -109,15 +110,15 @@ atAngle th = beside (fromDirection th)
 --     "Diagrams.TwoD.Align" before applying 'hcat'.
 --
 --   * For non-axis-aligned layout, see 'cat'.
-hcat :: (Juxtaposable a, HasOrigin a, Monoid' a, V a ~ R2)
+hcat :: (Juxtaposable a, HasOrigin a, Monoid' a, V a ~ (V2 b), OrderedField b)
      => [a] -> a
 hcat = hcat' def
 
 -- | A variant of 'hcat' taking an extra 'CatOpts' record to control
 --   the spacing.  See the 'cat'' documentation for a description of
 --   the possibilities.
-hcat' :: (Juxtaposable a, HasOrigin a, Monoid' a, V a ~ R2)
-      => CatOpts R2 -> [a] -> a
+hcat' :: (Juxtaposable a, HasOrigin a, Monoid' a, V a ~ (V2 b), OrderedField b)
+      => CatOpts (V2 b) -> [a] -> a
 hcat' = cat' unitX
 
 -- | Lay out a list of juxtaposable objects in a column from top to
@@ -131,15 +132,15 @@ hcat' = cat' unitX
 --     "Diagrams.TwoD.Align" before applying 'vcat'.
 --
 --   * For non-axis-aligned layout, see 'cat'.
-vcat :: (Juxtaposable a, HasOrigin a, Monoid' a, V a ~ R2)
+vcat :: (Juxtaposable a, HasOrigin a, Monoid' a, V a ~ (V2 b), OrderedField b)
      => [a] -> a
 vcat = vcat' def
 
 -- | A variant of 'vcat' taking an extra 'CatOpts' record to control
 --   the spacing.  See the 'cat'' documentation for a description of the
 --   possibilities.
-vcat' :: (Juxtaposable a, HasOrigin a, Monoid' a, V a ~ R2)
-      => CatOpts R2 -> [a] -> a
+vcat' :: (Juxtaposable a, HasOrigin a, Monoid' a, V a ~ (V2 b), OrderedField b)
+      => CatOpts (V2 b) -> [a] -> a
 vcat' = cat' (negateV unitY)
 
 -- | @strutR2 v@ is a two-dimensional diagram which produces no
@@ -156,13 +157,13 @@ strutR2 v = phantom seg
 -- | @strutX w@ is an empty diagram with width @w@, height 0, and a
 --   centered local origin.  Note that @strutX (-w)@ behaves the same as
 --   @strutX w@.
-strutX :: (Backend b R2, Monoid' m) => Double -> QDiagram b R2 m
+strutX :: (Backend e (V2 b), Monoid' m, OrderedField b) => b -> QDiagram e (V2 b) m
 strutX d = strut (d & 0)
 
 -- | @strutY h@ is an empty diagram with height @h@, width 0, and a
 --   centered local origin. Note that @strutY (-h)@ behaves the same as
 --   @strutY h@.
-strutY :: (Backend b R2, Monoid' m) => Double -> QDiagram b R2 m
+strutY :: (Backend e (V2 b), Monoid' m, OrderedField b) => b -> QDiagram e (V2 b) m
 strutY d = strut (0 & d)
 
 -- | @padX s@ \"pads\" a diagram in the x-direction, expanding its
@@ -172,8 +173,8 @@ strutY d = strut (0 & d)
 --   centered horizontally the padding may appear \"uneven\".  If this
 --   is not desired, the origin can be centered (using 'centerX')
 --   before applying @padX@.
-padX :: ( Backend b R2, Monoid' m )
-     => Double -> QDiagram b R2 m -> QDiagram b R2 m
+padX :: ( Backend e (V2 b), Monoid' m, OrderedField b)
+     => b -> QDiagram e (V2 b) m -> QDiagram e (V2 b) m
 padX s d = withEnvelope (d # scaleX s) d
 
 -- | @padY s@ \"pads\" a diagram in the y-direction, expanding its
@@ -183,8 +184,8 @@ padX s d = withEnvelope (d # scaleX s) d
 --   so if the origin is not centered vertically the padding may appear
 --   \"uneven\".  If this is not desired, the origin can be centered
 --   (using 'centerY') before applying @padY@.
-padY :: ( Backend b R2, Monoid' m )
-     => Double -> QDiagram b R2 m -> QDiagram b R2 m
+padY :: ( Backend e (V2 b), Monoid' m, OrderedField b)
+     => b -> QDiagram e (V2 b) m -> QDiagram e (V2 b) m
 padY s d = withEnvelope (d # scaleY s) d
 
 -- | @extrudeLeft s@ \"extrudes\" a diagram in the negative x-direction,
@@ -192,7 +193,8 @@ padY s d = withEnvelope (d # scaleY s) d
 --   the envelope is inset instead.
 --
 --   See the documentation for 'extrudeEnvelope' for more information.
-extrudeLeft :: Monoid' m => Double -> QDiagram b R2 m -> QDiagram b R2 m
+extrudeLeft :: (Monoid' m, Ord b, Floating b, AdditiveGroup b)
+            => b -> QDiagram e (V2 b) m -> QDiagram e (V2 b) m
 extrudeLeft s
   | s >= 0    = extrudeEnvelope $ unitX ^* negate s
   | otherwise = intrudeEnvelope $ unitX ^* negate s
@@ -202,7 +204,8 @@ extrudeLeft s
 --   the envelope is inset instead.
 --
 --   See the documentation for 'extrudeEnvelope' for more information.
-extrudeRight :: Monoid' m => Double -> QDiagram b R2 m -> QDiagram b R2 m
+extrudeRight :: (Monoid' m, Ord b, Floating b, AdditiveGroup b)
+             => b -> QDiagram e (V2 b) m -> QDiagram e (V2 b) m
 extrudeRight s
   | s >= 0    = extrudeEnvelope $ unitX ^* s
   | otherwise = intrudeEnvelope $ unitX ^* s
@@ -212,7 +215,8 @@ extrudeRight s
 --   the envelope is inset instead.
 --
 --   See the documentation for 'extrudeEnvelope' for more information.
-extrudeBottom :: Monoid' m => Double -> QDiagram b R2 m -> QDiagram b R2 m
+extrudeBottom :: (Monoid' m, Ord b, Floating b, AdditiveGroup b)
+              => b -> QDiagram e (V2 b) m -> QDiagram e (V2 b) m
 extrudeBottom s
   | s >= 0    = extrudeEnvelope $ unitY ^* negate s
   | otherwise = intrudeEnvelope $ unitY ^* negate s
@@ -222,7 +226,8 @@ extrudeBottom s
 --   the envelope is inset instead.
 --
 --   See the documentation for 'extrudeEnvelope' for more information.
-extrudeTop :: Monoid' m => Double -> QDiagram b R2 m -> QDiagram b R2 m
+extrudeTop :: (Monoid' m, Ord b, Floating b, AdditiveGroup b)
+           => b -> QDiagram e (V2 b) m -> QDiagram e (V2 b) m
 extrudeTop s
   | s >= 0    = extrudeEnvelope $ unitY ^* s
   | otherwise = intrudeEnvelope $ unitY ^* s
