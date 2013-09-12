@@ -72,92 +72,92 @@ import           Diagrams.TwoD.Vector    (leftTurn, unitX, unitY, unit_Y)
 import           Diagrams.Util           (tau, ( # ))
 
 -- | Method used to determine the vertices of a polygon.
-data PolyType = forall a. (Angle a, NumericType a ~ Double) => PolyPolar [a] [Double]
-                -- ^ A \"polar\" polygon.
-                --
-                --   * The first argument is a list of /central/
-                --     /angles/ from each vertex to the next.
-                --
-                --   * The second argument is a list of /radii/ from
-                --     the origin to each successive vertex.
-                --
-                --   To construct an /n/-gon, use a list of /n-1/
-                --   angles and /n/ radii.  Extra angles or radii
-                --   are ignored.
-                --
-                --   Cyclic polygons (with all vertices lying on a
-                --   circle) can be constructed using a second
-                --   argument of @(repeat r)@.
+data PolyType b = forall a. (Angle a, NumericType a ~ b) => PolyPolar [a] [b]
+                  -- ^ A \"polar\" polygon.
+                  --
+                  --   * The first argument is a list of /central/
+                  --     /angles/ from each vertex to the next.
+                  --
+                  --   * The second argument is a list of /radii/ from
+                  --     the origin to each successive vertex.
+                  --
+                  --   To construct an /n/-gon, use a list of /n-1/
+                  --   angles and /n/ radii.  Extra angles or radii
+                  --   are ignored.
+                  --
+                  --   Cyclic polygons (with all vertices lying on a
+                  --   circle) can be constructed using a second
+                  --   argument of @(repeat r)@.
 
-              | forall a. (Angle a, NumericType a ~ Double) => PolySides [a] [Double]
-                -- ^ A polygon determined by the distance between
-                --   successive vertices and the angles formed by
-                --   each three successive vertices.  In other
-                --   words, a polygon specified by \"turtle
-                --   graphics\": go straight ahead x1 units; turn by
-                --   angle a1; go straght ahead x2 units; turn by
-                --   angle a2; etc. The polygon will be centered at
-                --   the /centroid/ of its vertices.
-                --
-                --   * The first argument is a list of /vertex/
-                --     /angles/, giving the angle at each vertex
-                --     from the previous vertex to the next.  The
-                --     first angle in the list is the angle at the
-                --     /second/ vertex; the first edge always starts
-                --     out heading in the positive y direction from
-                --     the first vertex.
-                --
-                --   * The second argument is a list of distances
-                --     between successive vertices.
-                --
-                --   To construct an /n/-gon, use a list of /n-2/
-                --   angles and /n-1/ edge lengths.  Extra angles or
-                --   lengths are ignored.
+                | forall a. (Angle a, NumericType a ~ b) => PolySides [a] [b]
+                  -- ^ A polygon determined by the distance between
+                  --   successive vertices and the angles formed by
+                  --   each three successive vertices.  In other
+                  --   words, a polygon specified by \"turtle
+                  --   graphics\": go straight ahead x1 units; turn by
+                  --   angle a1; go straght ahead x2 units; turn by
+                  --   angle a2; etc. The polygon will be centered at
+                  --   the /centroid/ of its vertices.
+                  --
+                  --   * The first argument is a list of /vertex/
+                  --     /angles/, giving the angle at each vertex
+                  --     from the previous vertex to the next.  The
+                  --     first angle in the list is the angle at the
+                  --     /second/ vertex; the first edge always starts
+                  --     out heading in the positive y direction from
+                  --     the first vertex.
+                  --
+                  --   * The second argument is a list of distances
+                  --     between successive vertices.
+                  --
+                  --   To construct an /n/-gon, use a list of /n-2/
+                  --   angles and /n-1/ edge lengths.  Extra angles or
+                  --   lengths are ignored.
 
-              | PolyRegular Int Double
-                -- ^ A regular polygon with the given number of
-                --   sides (first argument) and the given radius
-                --   (second argument).
+                | PolyRegular Int b
+                  -- ^ A regular polygon with the given number of
+                  --   sides (first argument) and the given radius
+                  --   (second argument).
 
 -- | Determine how a polygon should be oriented.
-data PolyOrientation = NoOrient     -- ^ No special orientation; the first
-                                    --   vertex will be at (1,0).
-                                    --   This is the default.
-                     | OrientH      -- ^ Orient /horizontally/, so the
-                                    --   bottommost edge is parallel to
-                                    --   the x-axis.
-                     | OrientV      -- ^ Orient /vertically/, so the
-                                    --   leftmost edge is parallel to the
-                                    --   y-axis.
-                     | OrientTo R2  -- ^ Orient so some edge is
-                                    --   /facing/ /in/ /the/ /direction/
-                                    --   /of/, that is, perpendicular
-                                    --   to, the given vector.
+data PolyOrientation b = NoOrient         -- ^ No special orientation; the first
+                                          --   vertex will be at (1,0).
+                                          --   This is the default.
+                       | OrientH          -- ^ Orient /horizontally/, so the
+                                          --   bottommost edge is parallel to
+                                          --   the x-axis.
+                       | OrientV          -- ^ Orient /vertically/, so the
+                                          --   leftmost edge is parallel to the
+                                          --   y-axis.
+                       | OrientTo (V2 b)  -- ^ Orient so some edge is
+                                          --   /facing/ /in/ /the/ /direction/
+                                          --   /of/, that is, perpendicular
+                                          --   to, the given vector.
   deriving (Eq, Ord, Show, Read)
 
 -- | Options for specifying a polygon.
-data PolygonOpts = PolygonOpts
-                   { polyType   :: PolyType
-                     -- ^ Specification for the polygon's vertices.
+data PolygonOpts b = PolygonOpts
+                     { polyType   :: PolyType b
+                       -- ^ Specification for the polygon's vertices.
 
-                   , polyOrient :: PolyOrientation
-                     -- ^ Should a rotation be applied to the
-                     --   polygon in order to orient it in a
-                     --   particular way?
+                     , polyOrient :: PolyOrientation b
+                       -- ^ Should a rotation be applied to the
+                       --   polygon in order to orient it in a
+                       --   particular way?
 
-                   , polyCenter :: P2D
-                     -- ^ Should a translation be applied to the
-                     --   polygon in order to place the center at a
-                     --   particular location?
-                   }
+                     , polyCenter :: P2 b
+                       -- ^ Should a translation be applied to the
+                       --   polygon in order to place the center at a
+                       --   particular location?
+                     }
 
 -- | The default polygon is a regular pentagon of radius 1, centered
 --   at the origin, aligned to the x-axis.
-instance Default PolygonOpts where
+instance Num b => Default (PolygonOpts b) where
     def = PolygonOpts (PolyRegular 5 1) OrientH origin
 
 -- | Generate a polygon.  See 'PolygonOpts' for more information.
-polyTrail :: PolygonOpts -> Located (Trail R2)
+polyTrail :: OrderedField b => PolygonOpts b -> Located (Trail (V2 b))
 polyTrail po = transform ori tr
     where
         tr = case polyType po of
@@ -171,12 +171,12 @@ polyTrail po = transform ori tr
             NoOrient     -> mempty
 
 -- | Generate the polygon described by the given options.
-polygon :: (TrailLike t, V t ~ R2) => PolygonOpts -> t
+polygon :: (TrailLike t, V t ~ (V2 b)) => PolygonOpts b -> t
 polygon = trailLike . polyTrail
 
 -- | Generate the located trail of a polygon specified by polar data
 --   (central angles and radii). See 'PolyPolar'.
-polyPolarTrail :: (Angle a, NumericType a ~ Double) => [a] -> [Double] -> Located (Trail R2)
+polyPolarTrail :: (Angle a, NumericType a ~ b, OrderedField b) => [a] -> [b] -> Located (Trail (V2 b))
 polyPolarTrail [] _ = emptyTrail `at` origin
 polyPolarTrail _ [] = emptyTrail `at` origin
 polyPolarTrail ans (r:rs) = tr `at` p1
@@ -191,7 +191,7 @@ polyPolarTrail ans (r:rs) = tr `at` p1
 -- | Generate the vertices of a polygon specified by side length and
 --   angles, and a starting point for the trail such that the origin
 --   is at the centroid of the vertices.  See 'PolySides'.
-polySidesTrail :: (Angle a, NumericType a ~ Double) => [a] -> [Double] -> Located (Trail R2)
+polySidesTrail :: (Angle a, NumericType a ~ b, OrderedField b) => [a] -> [b] -> Located (Trail (V2 b))
 polySidesTrail ans ls = tr `at` (centroid ps # scale (-1))
   where
     ans'    = scanl (+) 0 ans
@@ -200,19 +200,23 @@ polySidesTrail ans ls = tr `at` (centroid ps # scale (-1))
     tr      = closeTrail . trailFromOffsets $ offsets
 
 -- | Generate the vertices of a regular polygon.  See 'PolyRegular'.
-polyRegularTrail :: Int -> Double -> Located (Trail R2)
-polyRegularTrail n r = polyPolarTrail
-                         (take (n-1) . repeat $ (tau::Rad Double) / fromIntegral n)
+polyRegularTrail :: OrderedField b => Int -> b -> Located (Trail (V2 b))
+polyRegularTrail n r = prt n r tau
+    where
+      prt       :: OrderedField b => Int -> b -> Rad b -> Located (Trail (V2 b))
+      prt n r a = polyPolarTrail
+                         (take (n-1) . repeat $ a / fromIntegral n)
                          (repeat r)
+
 
 -- | Generate a transformation to orient a trail.  @orient v t@
 --   generates the smallest rotation such that one of the segments
 --   adjacent to the vertex furthest in the direction of @v@ is
 --   perpendicular to @v@.
-orient :: R2 -> Located (Trail R2) -> T2D
+orient :: OrderedField b => V2 b -> Located (Trail (V2 b)) -> T2 b
 orient v = orientPoints v . trailVertices
 
-orientPoints :: R2 -> [P2D] -> T2D
+orientPoints :: OrderedField b => (V2 b) -> [P2 b] -> T2 b
 orientPoints v xs = rotation a
   where
     (n1,x,n2) = maximumBy (comparing (distAlong v . sndOf3))
@@ -314,7 +318,7 @@ data StarOpts = StarFun (Int -> Int)
 --   returned (instead of any 'TrailLike') because the resulting path
 --   may have more than one component, for example if the vertices are
 --   to be connected in several disjoint cycles.
-star :: StarOpts -> [P2D] -> Path R2
+star :: OrderedField b => StarOpts -> [P2 b] -> Path (V2 b)
 star sOpts vs = graphToPath $ mkGraph f vs
   where f = case sOpts of
               StarFun g  -> g
