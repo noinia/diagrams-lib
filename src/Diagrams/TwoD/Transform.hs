@@ -219,7 +219,7 @@ reflectionAbout p v = reflectionAbout' p (-direction v)
 
 -- | @reflectAbout p v@ reflects a diagram in the line determined by
 --   the point @p@ and the vector @v@.
-reflectAbout :: (Transformable t, V t ~ R2) => P2D -> R2 -> t -> t
+reflectAbout :: (Transformable t, V t ~ (V2 b), RealFloat b) => P2 b -> (V2 b) -> t -> t
 reflectAbout p v = transform (reflectionAbout p v)
 
 -- Shears --------------------------------------------------
