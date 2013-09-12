@@ -266,13 +266,13 @@ connect' opts n1 n2 =
 -- | Connect two diagrams with an aribrary trail at point on the perimeter of
 -- | the diagrams, choosen by angle.
 connectPerim
-  :: (Renderable (Path R2) b, IsName n1, IsName n2, Angle a, BasicNumType a ~ Double)
+  :: (Renderable (Path R2) b, IsName n1, IsName n2, Angle a, NumericType a ~ Double)
   => n1 -> n2 -> a -> a
   -> (Diagram b R2 -> Diagram b R2)
 connectPerim = connectPerim' def
 
 connectPerim'
-  :: (Renderable (Path R2) b, IsName n1, IsName n2, Angle a, BasicNumType a ~ Double)
+  :: (Renderable (Path R2) b, IsName n1, IsName n2, Angle a, NumericType a ~ Double)
   => ArrowOpts -> n1 -> n2 -> a -> a
   -> (Diagram b R2 -> Diagram b R2)
 connectPerim' opts n1 n2 a1 a2 =

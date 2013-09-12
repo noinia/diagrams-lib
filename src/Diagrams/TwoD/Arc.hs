@@ -88,7 +88,7 @@ the approximation error.
 
 -- | Given a start angle @s@ and an end angle @e@, @'arcT' s e@ is the
 --   'Trail' of a radius one arc counterclockwise between the two angles.
-arcT :: (Angle a, BasicNumType a ~ Double) => a -> a -> Trail R2
+arcT :: (Angle a, NumericType a ~ Double) => a -> a -> Trail R2
 arcT start end
     | end' < start' = arcT start' (end' + fromIntegral d)
     | otherwise     = (if sweep >= tau then glueTrail else id)
@@ -106,11 +106,11 @@ arcT start end
 -- | Given a start angle @s@ and an end angle @e@, @'arc' s e@ is the
 --   path of a radius one arc counterclockwise between the two angles.
 --   The origin of the arc is its center.
-arc :: (Angle a, TrailLike t, V t ~ R2, BasicNumType a ~ Double) => a -> a -> t
+arc :: (Angle a, TrailLike t, V t ~ R2, NumericType a ~ Double) => a -> a -> t
 arc start end = trailLike $ arcT start end `at` (rotate start $ p2 (1,0))
 
 -- | Like 'arc' but clockwise.
-arcCW :: (Angle a, TrailLike t, V t ~ R2, BasicNumType a ~ Double) => a -> a -> t
+arcCW :: (Angle a, TrailLike t, V t ~ R2, NumericType a ~ Double) => a -> a -> t
 arcCW start end = trailLike $
                             -- flipped arguments to get the path we want
                             -- then reverse the trail to get the cw direction.
@@ -130,7 +130,7 @@ arcCW start end = trailLike $
 --
 --   > arc'Ex = mconcat [ arc' r 0 (1/4 :: Turn) | r <- [0.5,-1,1.5] ]
 --   >        # centerXY # pad 1.1
-arc' :: (Angle a, TrailLike p, V p ~ R2, BasicNumType a ~ Double) => Double -> a -> a -> p
+arc' :: (Angle a, TrailLike p, V p ~ R2, NumericType a ~ Double) => Double -> a -> a -> p
 arc' r start end = trailLike $ scale (abs r) ts `at` (rotate start $ p2 (abs r,0))
   where ts | r < 0     = reverseTrail $ arcT end start
            | otherwise = arcT start end
@@ -147,7 +147,7 @@ arc' r start end = trailLike $ scale (abs r) ts `at` (rotate start $ p2 (abs r,0
 --   >   ]
 --   >   # fc blue
 --   >   # centerXY # pad 1.1
-wedge :: (Angle a, TrailLike p, V p ~ R2, BasicNumType a ~ Double) => Double -> a -> a -> p
+wedge :: (Angle a, TrailLike p, V p ~ R2, NumericType a ~ Double) => Double -> a -> a -> p
 wedge r a1 a2 = trailLike . (`at` origin) . glueTrail . wrapLine
               $ fromOffsets [r *^ e a1]
                 <> arc a1 a2 # scale r

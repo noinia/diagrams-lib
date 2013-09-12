@@ -72,7 +72,7 @@ import           Diagrams.TwoD.Vector    (leftTurn, unitX, unitY, unit_Y)
 import           Diagrams.Util           (tau, ( # ))
 
 -- | Method used to determine the vertices of a polygon.
-data PolyType = forall a. (Angle a, BasicNumType a ~ Double) => PolyPolar [a] [Double]
+data PolyType = forall a. (Angle a, NumericType a ~ Double) => PolyPolar [a] [Double]
                 -- ^ A \"polar\" polygon.
                 --
                 --   * The first argument is a list of /central/
@@ -89,7 +89,7 @@ data PolyType = forall a. (Angle a, BasicNumType a ~ Double) => PolyPolar [a] [D
                 --   circle) can be constructed using a second
                 --   argument of @(repeat r)@.
 
-              | forall a. (Angle a, BasicNumType a ~ Double) => PolySides [a] [Double]
+              | forall a. (Angle a, NumericType a ~ Double) => PolySides [a] [Double]
                 -- ^ A polygon determined by the distance between
                 --   successive vertices and the angles formed by
                 --   each three successive vertices.  In other
@@ -176,7 +176,7 @@ polygon = trailLike . polyTrail
 
 -- | Generate the located trail of a polygon specified by polar data
 --   (central angles and radii). See 'PolyPolar'.
-polyPolarTrail :: (Angle a, BasicNumType a ~ Double) => [a] -> [Double] -> Located (Trail R2)
+polyPolarTrail :: (Angle a, NumericType a ~ Double) => [a] -> [Double] -> Located (Trail R2)
 polyPolarTrail [] _ = emptyTrail `at` origin
 polyPolarTrail _ [] = emptyTrail `at` origin
 polyPolarTrail ans (r:rs) = tr `at` p1
@@ -191,7 +191,7 @@ polyPolarTrail ans (r:rs) = tr `at` p1
 -- | Generate the vertices of a polygon specified by side length and
 --   angles, and a starting point for the trail such that the origin
 --   is at the centroid of the vertices.  See 'PolySides'.
-polySidesTrail :: (Angle a, BasicNumType a ~ Double) => [a] -> [Double] -> Located (Trail R2)
+polySidesTrail :: (Angle a, NumericType a ~ Double) => [a] -> [Double] -> Located (Trail R2)
 polySidesTrail ans ls = tr `at` (centroid ps # scale (-1))
   where
     ans'    = scanl (+) 0 ans

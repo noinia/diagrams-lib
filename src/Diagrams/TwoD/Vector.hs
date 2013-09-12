@@ -46,16 +46,16 @@ unit_Y = 0 & (-1)
 -- | Compute the direction of a vector, measured counterclockwise from
 --   the positive x-axis as a fraction of a full turn.  The zero
 --   vector is arbitrarily assigned the direction 0.
-direction                    :: (Angle a, BasicNumType a ~ b, RealFloat b) => V2 b -> a
+direction                    :: (Angle a, NumericType a ~ b, RealFloat b) => V2 b -> a
 direction (coords -> x :& y) = convertAngle . Rad $ atan2 y x
 
 -- | Convert an angle into a unit vector pointing in that direction.
-fromDirection :: (Angle a, BasicNumType a ~ b, Floating b) => a -> V2 b
+fromDirection :: (Angle a, NumericType a ~ b, Floating b) => a -> V2 b
 fromDirection a = cos a' & sin a'
   where Rad a' = convertAngle a
 
 -- | A convenient synonym for 'fromDirection'.
-e :: (Angle a, BasicNumType a ~ b, Floating b) => a -> V2 b
+e :: (Angle a, NumericType a ~ b, Floating b) => a -> V2 b
 e = fromDirection
 
 -- | @perp v@ is perpendicular to and has the same magnitude as @v@.

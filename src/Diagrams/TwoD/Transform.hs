@@ -65,8 +65,8 @@ import           Data.Semigroup
 
 -- Rotation ------------------------------------------------
 
--- | Shorthand that specifies b is the BasicNumType of a, and b is floating
-type BasicFloatingType a b = (BasicNumType a ~ b, Floating b)
+-- | Shorthand that specifies b is the NumericType of a, and b is floating
+type BasicFloatingType a b = (NumericType a ~ b, Floating b)
 
 
 -- | Create a transformation which performs a rotation about the local
@@ -97,7 +97,7 @@ rotate = transform . rotation
 -- | A synonym for 'rotate', specialized to only work with
 --   @Turn@ arguments; it can be more convenient to write
 --   @rotateBy (1\/4)@ than @'rotate' (1\/4 :: 'Turn')@.
-rotateBy :: (Transformable t, V t ~ V2 b, Floating b, IsBasicNumType b) => Turn b -> t -> t
+rotateBy :: (Transformable t, V t ~ V2 b, Floating b) => Turn b -> t -> t
 rotateBy = transform . rotation
 
 -- | @rotationAbout p@ is a rotation about the point @p@ (instead of
@@ -210,10 +210,10 @@ reflectY = transform reflectionY
 
 -- | @reflectionAbout p v@ is a reflection in the line determined by
 --   the point @p@ and vector @v@.
-reflectionAbout :: (RealFloat b, IsBasicNumType b) => P2 b -> V2 b -> T2 b
+reflectionAbout :: RealFloat b => P2 b -> V2 b -> T2 b
 reflectionAbout p v = reflectionAbout' p (-direction v)
     where
-      reflectionAbout' :: (Floating b, IsBasicNumType b) => P2 b -> Rad b -> T2 b
+      reflectionAbout' :: Floating b => P2 b -> Rad b -> T2 b
       reflectionAbout' p dir = conjugate (rotation dir <> translation (origin .-. p))
                                reflectionY
 

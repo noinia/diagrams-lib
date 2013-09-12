@@ -87,7 +87,7 @@ closedPath = pathFromTrail . closeTrail
 -- | Heads ------------------------------------------------------------------
 
 -- | Isoceles triangle style.
-arrowheadTriangle :: (Angle a, BasicNumType a ~ Double) => a -> ArrowHT
+arrowheadTriangle :: (Angle a, NumericType a ~ Double) => a -> ArrowHT
 arrowheadTriangle theta = aHead
   where
     aHead size _ = (p, mempty)
@@ -96,7 +96,7 @@ arrowheadTriangle theta = aHead
             (repeat (radius * size)) ,polyOrient = NoOrient}  # alignL
 
 -- | Isoceles triangle with linear concave base. Inkscape type 1 - dart like.
-arrowheadDart :: (Angle a, BasicNumType a ~ Double) => a -> ArrowHT
+arrowheadDart :: (Angle a, NumericType a ~ Double) => a -> ArrowHT
 arrowheadDart theta = aHead
   where
     aHead size shaftWidth = (dart # moveOriginTo (dartVertices !! 2), joint)
@@ -116,7 +116,7 @@ arrowheadDart theta = aHead
                              , dartVertices !! 2 ]) # alignR
 
 -- | Isoceles triangle with curved concave base. Inkscape type 2.
-arrowheadSpike :: (Angle a, BasicNumType a ~ Double) => a -> ArrowHT
+arrowheadSpike :: (Angle a, NumericType a ~ Double) => a -> ArrowHT
 arrowheadSpike theta = aHead
   where
     aHead size shaftWidth = (barb # moveOriginBy (m *^ unit_X) , joint)
@@ -137,7 +137,7 @@ arrowheadSpike theta = aHead
             b = fromMaybe 0 (magnitude <$> traceV origin unit_X p)
 
 -- | Curved sides, linear concave base. Illustrator CS5 #3
-arrowheadThorn :: (Angle a, BasicNumType a ~ Double) => a -> Double -> ArrowHT
+arrowheadThorn :: (Angle a, NumericType a ~ Double) => a -> Double -> ArrowHT
 arrowheadThorn theta r = aHead
   where
     aHead size shaftWidth = (thorn  # moveOriginTo (thornVertices !! 2), joint)
@@ -159,7 +159,7 @@ arrowheadThorn theta r = aHead
                              , thornVertices !! 2 ]) # alignR
 
 -- | Make a side for the thorn head.
-curvedSide :: (Angle a, BasicNumType a ~ Double) => a -> Segment Closed R2
+curvedSide :: (Angle a, NumericType a ~ Double) => a -> Segment Closed R2
 curvedSide theta = bezier3 ctrl1 ctrl2 end
   where
     v0    = scaleR unit_X
@@ -183,7 +183,7 @@ smoothArrowhead f = aHead
         smooth [] = mempty
         smooth (x:xs) = cubicSpline True x <> smooth xs
 
-arrowheadMissile :: (Angle a, BasicNumType a ~ Double) => a -> ArrowHT
+arrowheadMissile :: (Angle a, NumericType a ~ Double) => a -> ArrowHT
 arrowheadMissile theta = smoothArrowhead $ arrowheadDart theta
 
 -- | Standard heads ---------------------------------------------------------
@@ -218,7 +218,7 @@ headToTail hd = tl
         t = reflectX t'
         j = reflectX j'
 
-arrowtailBlock :: (Angle a, BasicNumType a ~ Double) => a -> ArrowHT
+arrowtailBlock :: (Angle a, NumericType a ~ Double) => a -> ArrowHT
 arrowtailBlock theta =aTail
   where
    aTail size shaftWidth = (t, mempty)
@@ -231,7 +231,7 @@ arrowtailBlock theta =aTail
         x = magnitude b
 
 -- | Theta is the angle where the top left corner intersects the circle.
-arrowtailQuill :: (Angle a, BasicNumType a ~ Double) => a -> ArrowHT
+arrowtailQuill :: (Angle a, NumericType a ~ Double) => a -> ArrowHT
 arrowtailQuill theta =aTail
   where
    aTail size shaftWidth = (t, j)
